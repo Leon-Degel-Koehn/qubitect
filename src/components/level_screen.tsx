@@ -1,4 +1,5 @@
 import { Devvit, useState } from '@devvit/public-api';
+import { Level } from '../types.js';
 
 function qubitLines(numQubits: number) {
   let lines = [<spacer height="20px" />];
@@ -27,11 +28,6 @@ const bottomMenu = (gates: string[], selectedGate: string, selectGate: Function)
       />
     ))}
   </hstack>)
-}
-
-interface Level {
-  // TODO: expand
-  levelId?: number,
 }
 
 export const LevelScreen = (level?: Level): JSX.Element => {
