@@ -20,14 +20,14 @@ export class Circuit {
 	}
 
 	simulate(input: Stabilizer[]): Stabilizer[] {
-
+		return [new Stabilizer(-1, [1], [1])];
 	}
 }
 
 export class Stabilizer {
-	phase : number;
-	x_part : number[];
-	z_part : number[];
+	phase: number;
+	x_part: number[];
+	z_part: number[];
 
 	constructor(phase: number, x_par: number[], z_par: number[]) {
 		this.phase = phase;
@@ -35,18 +35,18 @@ export class Stabilizer {
 		this.z_part = z_par;
 	}
 
-	add(rhs : Stabilizer) : Stabilizer {
+	add(rhs: Stabilizer): Stabilizer {
 		let phase = this.phase * rhs.phase;
 		let x_part = this.x_part.map((x, i) => x ^ rhs.x_part[i]);
 		let z_part = this.z_part.map((z, i) => z ^ rhs.z_part[i]);
 		return new Stabilizer(phase, x_part, z_part);
 	}
 
-	commutes_with(rhs : Stabilizer) : boolean {
+	commutes_with(rhs: Stabilizer): boolean {
 		return (this.inner_product(this.x_part, rhs.z_part) ^ this.inner_product(this.z_part, rhs.x_part)) == 0;
 	}
 
-	inner_product(lhs : number[], rhs : number[]) : number {
+	inner_product(lhs: number[], rhs: number[]): number {
 		return lhs.reduce((acc, x, i) => acc ^ x & rhs[i], 0);
 	}
 
@@ -55,6 +55,7 @@ export class Stabilizer {
 	}
 }
 
+// FIXME: Doesn' t work with our new stabilizer def
 function copyStabilizer(original: Stabilizer): Stabilizer {
 	return Object.assign({}, original); // looks weird but is essentially .copy() in python
 }
