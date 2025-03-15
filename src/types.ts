@@ -1,4 +1,4 @@
-import * as numeric from 'numeric';
+import * as math from 'mathjs';
 // dummy asset in place where an identity operation is performed
 const ID_ASSET = "";
 
@@ -223,10 +223,11 @@ export class Measurement implements Gate {
             // Check if the measurement operator is a stabilizer => outcome = 0
             // This is done by checking if the measurement operator is in subspace spanned by the stabilizer generators
             let basisMatrix = input.map(stabilizer => stabilizer.x_part.concat(stabilizer.z_part));
-            basisMatrix = numeric.transpose(basisMatrix);
+            const A = math.transpose(math.matrix(basisMatrix));
+            const A_pinv = math.pinv(A);
             const measurementOperatorVector = this.measurementOperator.x_part.concat(this.measurementOperator.z_part);
-            // FIXME: numeric.solve is not working as expected
-            const solution = numeric.solve(basisMatrix, measurementOperatorVector);
+            const b = math.matrix(measurementOperatorVector);
+            const solution = math.multiply(A_pinv, b).toArray().map(x => Number(x));
             if (solution) {
                 // Measurement operator is in the stabilizer subspace => Post-measurement stabilizer is not changed
                 // However, we need to find out the measurement result by checking the phase
