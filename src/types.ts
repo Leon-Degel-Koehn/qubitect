@@ -22,7 +22,7 @@ export class Circuit {
 
     simulate(input: Stabilizer[]): Stabilizer[] {
         // Iterate over all gates and change stabilizer accordingly
-        for (let gate of this.gates) {
+        for (const gate of this.gates) {
             input = gate.simulate(input);
         }
         return input;
@@ -41,9 +41,9 @@ export class Stabilizer {
     }
 
     add(rhs: Stabilizer): Stabilizer {
-        let phase = this.phase * rhs.phase;
-        let x_part = this.x_part.map((x, i) => x ^ rhs.x_part[i]);
-        let z_part = this.z_part.map((z, i) => z ^ rhs.z_part[i]);
+        const phase = this.phase * rhs.phase;
+        const x_part = this.x_part.map((x, i) => x ^ rhs.x_part[i]);
+        const z_part = this.z_part.map((z, i) => z ^ rhs.z_part[i]);
         return new Stabilizer(phase, x_part, z_part);
     }
 
@@ -108,14 +108,14 @@ export class Hadamard implements Gate {
 
     simulate(input: Stabilizer[]): Stabilizer[] {
         // Swap the X and Z parts of the stabilizer
-        let result = [];
-        for (let stabilizer of input) {
-            let x_part = stabilizer.x_part;
-            let z_part = stabilizer.z_part;
-            for (let affectedQubit of this.affectedQubits) {
+        const result = [];
+        for (const stabilizer of input) {
+            const x_part = stabilizer.x_part;
+            const z_part = stabilizer.z_part;
+            for (const affectedQubit of this.affectedQubits) {
                 // Swap the X and Z parts of the stabilizer
                 // FIXME: Old stabilizer is not preserved
-                let temp = x_part[affectedQubit];
+                const temp = x_part[affectedQubit];
                 x_part[affectedQubit] = z_part[affectedQubit];
                 z_part[affectedQubit] = temp;
             }
@@ -136,12 +136,12 @@ export class PauliX implements Gate {
 
     simulate(input: Stabilizer[]): Stabilizer[] {
         // Flip phase of Z part
-        let result = [];
-        for (let stabilizer of input) {
-            let x_part = stabilizer.x_part;
-            let z_part = stabilizer.z_part;
+        const result = [];
+        for (const stabilizer of input) {
+            const x_part = stabilizer.x_part;
+            const z_part = stabilizer.z_part;
             let phase = stabilizer.phase;
-            for (let affectedQubit of this.affectedQubits) {
+            for (const affectedQubit of this.affectedQubits) {
                 phase *= -z_part[affectedQubit];
             }
             result.push(new Stabilizer(phase, x_part, z_part));
@@ -161,12 +161,12 @@ export class PauliZ implements Gate {
 
     simulate(input: Stabilizer[]): Stabilizer[] {
         // Flip phase of X part
-        let result = [];
-        for (let stabilizer of input) {
-            let x_part = stabilizer.x_part;
-            let z_part = stabilizer.z_part;
+        const result = [];
+        for (const stabilizer of input) {
+            const x_part = stabilizer.x_part;
+            const z_part = stabilizer.z_part;
             let phase = stabilizer.phase;
-            for (let affectedQubit of this.affectedQubits) {
+            for (const affectedQubit of this.affectedQubits) {
                 phase *= -x_part[affectedQubit];
             }
             result.push(new Stabilizer(phase, x_part, z_part));
@@ -186,12 +186,12 @@ export class PauliY implements Gate {
 
     simulate(input: Stabilizer[]): Stabilizer[] {
         // Flip phase of Z and X part
-        let result = [];
-        for (let stabilizer of input) {
-            let x_part = stabilizer.x_part;
-            let z_part = stabilizer.z_part;
+        const result = [];
+        for (const stabilizer of input) {
+            const x_part = stabilizer.x_part;
+            const z_part = stabilizer.z_part;
             let phase = stabilizer.phase;
-            for (let affectedQubit of this.affectedQubits) {
+            for (const affectedQubit of this.affectedQubits) {
                 phase *= Math.pow(-1, z_part[affectedQubit] + x_part[affectedQubit]);
             }
             result.push(new Stabilizer(phase, x_part, z_part));
@@ -215,7 +215,7 @@ export class Measurement implements Gate {
     simulate(input: Stabilizer[]): Stabilizer[] {
         // Check if measurement operator commutes with all stabilizer generators
         let commutes = true;
-        for (let stabilizer of input) {
+        for (const stabilizer of input) {
             commutes = commutes && this.measurementOperator.commutes_with(stabilizer);
         }
         // If it commutes, the measurement is deterministic
@@ -224,14 +224,14 @@ export class Measurement implements Gate {
             // This is done by checking if the measurement operator is in subspace spanned by the stabilizer generators
             let basisMatrix = input.map(stabilizer => stabilizer.x_part.concat(stabilizer.z_part));
             basisMatrix = numeric.transpose(basisMatrix);
-            let measurementOperatorVector = this.measurementOperator.x_part.concat(this.measurementOperator.z_part);
+            const measurementOperatorVector = this.measurementOperator.x_part.concat(this.measurementOperator.z_part);
             // FIXME: numeric.solve is not working as expected
-            let solution = numeric.solve(basisMatrix, measurementOperatorVector);
+            const solution = numeric.solve(basisMatrix, measurementOperatorVector);
             if (solution) {
                 // Measurement operator is in the stabilizer subspace => Post-measurement stabilizer is not changed
                 // However, we need to find out the measurement result by checking the phase
                 // 1. Take absolute value of solution vector
-                let absSolution = solution.map(x => Math.abs(x));
+                const absSolution = solution.map(x => Math.abs(x));
                 // 2. Find resulting phase
                 let phase = 1;
                 for (let i = 0; i < absSolution.length; i++) {
@@ -244,11 +244,11 @@ export class Measurement implements Gate {
             }
         } else {
             // 1. Flip coin to determine measurement result
-            let result = Math.random() < 0.5 ? 0 : 1;
+            const result = Math.random() < 0.5 ? 0 : 1;
             console.log("Measurement result: ", result);
             // 2. Find generator that anti-commutes with measurement operator
-            let postMeasurementStabilizers = [];
-            let antiCommutesIndex = input.findIndex(stabilizer => !this.measurementOperator.commutes_with(stabilizer));
+            const postMeasurementStabilizers = [];
+            const antiCommutesIndex = input.findIndex(stabilizer => !this.measurementOperator.commutes_with(stabilizer));
             // 3. Replace all other anti-commuting generators with product of measurement operator and anti-commuting generator
             for (let i = 0; i < input.length; i++) {
                 if (i != antiCommutesIndex) {
@@ -256,7 +256,7 @@ export class Measurement implements Gate {
                 }
             }
             // 4. Flip phase of anti-commuting generator if result is 1
-            let antiCommutes = input[antiCommutesIndex];
+            const antiCommutes = input[antiCommutesIndex];
             if (result == 1) {
                 antiCommutes.phase *= -1;
             }
