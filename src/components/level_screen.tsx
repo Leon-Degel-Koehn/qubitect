@@ -1,5 +1,5 @@
 import { Devvit, useState } from '@devvit/public-api';
-import { Identity, Level, PlaceholderGate } from '../types.js';
+import { Gate, Identity, Level, PlaceholderGate } from '../types.js';
 import { stateFromStabilizer } from '../utils.js';
 import { Rect } from './rectangle.js';
 import { gateLayout } from '../ui/helper.js';
@@ -13,7 +13,11 @@ function qubitLines(numQubits: number) {
   return <vstack width="100%">{lines}</vstack>;
 }
 
-const bottomMenu = (gates: string[], selectedGate: string, selectGate: Function) => {
+const bottomMenu = (gates: Gate[], selectedGate: number, selectGate: Function) => {
+  let mappedGates = [];
+  for (let i = 0; i < gates.length; i++) {
+    mappedGates.push({ 'gateAsset': gates[i].assets[0], 'idx': i });
+  }
   return (<hstack
     alignment='center middle'
     gap='medium'
@@ -22,12 +26,12 @@ const bottomMenu = (gates: string[], selectedGate: string, selectGate: Function)
     borderColor='black'
     cornerRadius='medium'
   >
-    {gates.map((gateLabel) => (
+    {mappedGates.map(({ gateAsset: gateAsset, idx: idx }) => (
       <image
-        url={`${gateLabel}.png`}
-        imageHeight={!!selectedGate ? gateLabel == selectedGate ? 50 : 30 : 40}
-        imageWidth={!!selectedGate ? gateLabel == selectedGate ? 50 : 30 : 40}
-        onPress={() => { selectGate(gateLabel) }}
+        url={gateAsset}
+        imageHeight={selectedGate >= 0 ? idx == selectedGate ? 50 : 30 : 40}
+        imageWidth={selectedGate >= 0 ? idx == selectedGate ? 50 : 30 : 40}
+        onPress={() => { selectGate(idx) }}
       />
     ))}
   </hstack>)
@@ -76,8 +80,7 @@ interface LevelScreenProps {
 }
 
 export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
-  let gates = ["hadamard", "pauli_x"]
-  const [selectedGate, selectGate] = useState('')
+  const [selectedGate, selectGate] = useState(-1)
   const numQubits = 2;
   const ketInputStates = stateFromStabilizer(props.level.inputState);
   return (
@@ -105,7 +108,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
         </hstack>
       </zstack>
       <spacer grow shape='invisible' />
-      {bottomMenu(gates, selectedGate, selectGate)}
+      {bottomMenu(props.level.availableGates, selectedGate, selectGate)}
     </vstack>
   )
 }

@@ -1,7 +1,10 @@
 import { Level, Circuit, Stabilizer, PauliX, Hadamard, PauliZ } from "../types.js";
 
 export const TestLevel: Level = {
-  availableGates: [],
+  availableGates: [
+    new PauliX(-1),
+    new PauliZ(-1),
+  ],
   inputState: [
     new Stabilizer(1, [0, 0], [1, 0]),
     new Stabilizer(1, [0, 0], [0, 1]),
