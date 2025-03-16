@@ -51,5 +51,36 @@ describe('CircuitSimulation tests', () => {
         expect(result[0].x_part).toEqual([0]);
         expect(result[0].z_part).toEqual([1]);
     });
+    test('Post-measurement state of superposition corresponds to measurement outcome', () => {
+        const measurementOutcome = Math.random() > 0.5 ? 0 : 1;
+        global.Math.random = () => measurementOutcome;
+        const gates = [new Measurement(new Stabilizer(1, [1], [0]))];
+        const circuit = new Circuit(1, gates);
+        const stabilizer = [new Stabilizer(1, [0], [1])];
+        const result = circuit.simulate(stabilizer);
+        expect(result.length).toBe(1);
+        expect(result[0].phase).toBe(measurementOutcome === 0 ? 1 : -1);
+        expect(result[0].x_part).toEqual([1]);
+        expect(result[0].z_part).toEqual([0]);
+    });
+    test('Measurement of bell state in computational basis', () => {
+        const measurementOutcome = Math.random() > 0.5 ? 0 : 1;
+        global.Math.random = () => measurementOutcome;
+        const resultingPhase = measurementOutcome === 0 ? 1 : -1;
+        const measurementOperator = new Stabilizer(1, [0, 0], [1, 0]);
+        const gates = [new Measurement(measurementOperator)];
+        const circuit = new Circuit(2, gates);
+        const stabilizer = [new Stabilizer(1, [0, 0], [1, 1]), new Stabilizer(1, [1, 1], [0, 0])];
+        const result = circuit.simulate(stabilizer);
+        expect(result.length).toBe(2);
+        // TODO: Write dedicated function to check stabilizer is in subspace of generators
+        // Check if measurement operator commutes with all stabilizer generators
+        let commutes = true;
+        for (const stabilizer of result) {
+            commutes = commutes && measurementOperator.commutes_with(stabilizer);
+        }
+        expect(commutes).toBe(true);
+        // TODO: Check measurement outcome by calculating the phase of the stabilizer
+    });
 
 })

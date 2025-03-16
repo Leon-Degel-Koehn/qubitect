@@ -220,15 +220,16 @@ export class Measurement implements Gate {
         }
         // If it commutes, the measurement is deterministic
         if (commutes) {
-            // Check if the measurement operator is a stabilizer => outcome = 0
-            // This is done by checking if the measurement operator is in subspace spanned by the stabilizer generators
+            // Calculate measurement outcome by checking if +P (=0) is in the stabilizer subspace or -P(=1)
+            // TODO: Move this to a dedicated function
             let basisMatrix = input.map(stabilizer => stabilizer.x_part.concat(stabilizer.z_part));
             const A = math.transpose(math.matrix(basisMatrix));
             const A_pinv = math.pinv(A);
             const measurementOperatorVector = this.measurementOperator.x_part.concat(this.measurementOperator.z_part);
             const b = math.matrix(measurementOperatorVector);
             const solution = math.multiply(A_pinv, b).toArray().map(x => Number(x));
-            if (solution) {
+            // Check if b equals A * x
+            if (math.norm(math.subtract(b, math.multiply(A, solution))) == 0) {
                 // Measurement operator is in the stabilizer subspace => Post-measurement stabilizer is not changed
                 // However, we need to find out the measurement result by checking the phase
                 // 1. Take absolute value of solution vector
@@ -253,15 +254,17 @@ export class Measurement implements Gate {
             // 3. Replace all other anti-commuting generators with product of measurement operator and anti-commuting generator
             for (let i = 0; i < input.length; i++) {
                 if (i != antiCommutesIndex) {
-                    postMeasurementStabilizers.push(input[i].add(input[antiCommutesIndex]));
+                    // If they anti-commute, add the product of the two to the stabilizers
+                    if (!this.measurementOperator.commutes_with(input[i])) {
+                        postMeasurementStabilizers.push(input[i].add(input[antiCommutesIndex]));
+                    } else {
+                        postMeasurementStabilizers.push(input[i]);
+                    }
                 }
             }
-            // 4. Flip phase of anti-commuting generator if result is 1
-            const antiCommutes = input[antiCommutesIndex];
-            if (result == 1) {
-                antiCommutes.phase *= -1;
-            }
-            postMeasurementStabilizers.push(antiCommutes);
+            // 4. Set anti-commuting generator to measurement operator with phase depending on measurement result
+            this.measurementOperator.phase = result == 0 ? 1 : -1;
+            postMeasurementStabilizers.push(this.measurementOperator);
             return postMeasurementStabilizers;
         }
     }
