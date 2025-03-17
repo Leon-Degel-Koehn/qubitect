@@ -1,37 +1,39 @@
+import { Session } from "../levels/types.js";
 import { Level, Gate, Identity, PlaceholderGate } from "../types.js";
 
-export const gateLayout = (level: Level): Gate[][] => {
+type GateLayoutEntry = {
+    originalIdx: number,
+    gate: Gate,
+}
+
+type GateLayout = GateLayoutEntry[][];
+
+export const gateLayout = (session: Session): GateLayout => {
     let gateMat = new Array();
-    gateMat = addColumn(gateMat, level.circuit.qubits);
-    for (let i = 0; i < level.circuit.gates.length; i++) {
-        let currGate = level.circuit.gates[i];
+    gateMat = addColumn(gateMat, session.displayedCircuit.qubits);
+    for (let i = 0; i < session.displayedCircuit.gates.length; i++) {
+        let currGate = session.displayedCircuit.gates[i];
         let lastCol = gateMat[gateMat.length - 1];
         for (let targetQubit of currGate.affectedQubits) {
-            if (!(lastCol[targetQubit] instanceof Identity)) {
-                gateMat = addColumn(gateMat, level.circuit.qubits);
+            if (!(lastCol[targetQubit].gate instanceof Identity)) {
+                gateMat = addColumn(gateMat, session.displayedCircuit.qubits);
             }
         }
         lastCol = gateMat[gateMat.length - 1];
-        let gateToInsert = gateOrPlaceholder(level.greyedOutIndices, level.circuit.gates, i);
+        let gateToInsert = session.displayedCircuit.gates[i];
         for (let targetQubit of gateToInsert.affectedQubits) {
-            lastCol[targetQubit] = gateToInsert;
+            lastCol[targetQubit].gate = gateToInsert;
+            lastCol[targetQubit].originalIdx = i;
         }
     }
     return gateMat;
 }
 
-const addColumn = (gateMat: Gate[][], qubits: number) => {
+const addColumn = (gateMat: GateLayout, qubits: number) => {
     gateMat.push(new Array());
     const lastIdx = gateMat.length - 1;
     for (let i = 0; i < qubits; i++) {
-        gateMat[lastIdx].push(new Identity(i));
+        gateMat[lastIdx].push({ originalIdx: -1, gate: new Identity(i) });
     }
     return gateMat;
-}
-
-const gateOrPlaceholder = (greyedOuts: number[], gates: Gate[], idx: number): Gate => {
-    if (greyedOuts.includes(idx)) {
-        return new PlaceholderGate(gates[idx].affectedQubits)
-    }
-    return gates[idx];
 }

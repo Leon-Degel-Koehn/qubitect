@@ -1,10 +1,11 @@
 import { gateLayout } from "../ui/helper.js";
 import { TestLevel } from "../levels/simplest.js";
 import { Hadamard, Identity, PauliX, PlaceholderGate } from "../types.js";
+import { Session } from "../levels/types.js";
 
 describe('Gate layout tests', () => {
     test('Basic example is layed out correctly', () => {
-        const layout = gateLayout(TestLevel);
+        const layout = gateLayout(new Session(TestLevel));
         expect(layout[0][0]).toBeInstanceOf(PauliX);
         expect(layout[0][1]).toBeInstanceOf(Hadamard);
         expect(layout[1][0]).toBeInstanceOf(Identity);

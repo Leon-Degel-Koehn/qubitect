@@ -3,6 +3,7 @@ import { Gate, Identity, Level, PlaceholderGate } from '../types.js';
 import { stateFromStabilizer } from '../utils.js';
 import { Rect } from './rectangle.js';
 import { gateLayout } from '../ui/helper.js';
+import { Session } from '../levels/types.js';
 
 function qubitLines(numQubits: number) {
   let lines = [<spacer height="20px" />];
@@ -37,16 +38,38 @@ const bottomMenu = (gates: Gate[], selectedGate: number, selectGate: Function) =
   </hstack>)
 }
 
-const Gates = (props: LevelScreenProps): JSX.Element => {
-  let layout = gateLayout(props.level);
-  let mappedLayout = layout.map((col) => col.map((gate) => {
-    if (gate instanceof PlaceholderGate) {
+interface GateProps {
+  session: Session,
+  selectedGateIdx: number,
+  gateReplacements: number[],
+  replaceGate: Function[],
+}
+
+const Gates = (props: GateProps): JSX.Element => {
+  let layout = gateLayout(props.session);
+  let mappedLayout = layout.map((col) => col.map((gateEntry) => {
+    let gate: Gate = gateEntry.gate;
+    let idx: number = gateEntry.originalIdx;
+    if (props.session.level.greyedOutIndices.includes(idx)) {
       return (
-        <Rect
-          width={40}
-          height={40}
-          backgroundColor="rgba(196, 185, 191, 0.48)"
-        />
+        <zstack borderColor='Periwinkle-500' border='thick'>
+          <image
+            url={
+              props.gateReplacements[idx] >= 0 ?
+                props.session.level.availableGates[props.gateReplacements[idx]].assets[0]
+                : "placeholder.png"
+            }
+            imageHeight="40px"
+            imageWidth="40px"
+            onPress={() => {
+              if (props.gateReplacements[idx] == props.selectedGateIdx) {
+                props.replaceGate[idx](-1);
+              } else {
+                props.replaceGate[idx](props.selectedGateIdx);
+              }
+            }}
+          />
+        </zstack>
       )
     }
     if (gate instanceof Identity) {
@@ -76,13 +99,20 @@ const Gates = (props: LevelScreenProps): JSX.Element => {
 }
 
 interface LevelScreenProps {
-  level: Level;
+  session: Session;
 }
 
 export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
   const [selectedGate, selectGate] = useState(-1)
+  let gateReplacements = [];
+  let replaceGate = [];
+  for (let i = 0; i < props.session.level.circuit.gates.length; i++) {
+    let temp = useState(-1);
+    gateReplacements.push(temp[0]);
+    replaceGate.push(temp[1]);
+  }
   const numQubits = 2;
-  const ketInputStates = stateFromStabilizer(props.level.inputState);
+  const ketInputStates = stateFromStabilizer(props.session.level.inputState);
   return (
     <vstack alignment='center middle' height='100%' gap='large' padding='medium' backgroundColor='white'>
       <spacer grow shape='invisible' />
@@ -98,7 +128,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
               />
             ))}
           </vstack>
-          <Gates level={props.level} />
+          <Gates session={props.session} selectedGateIdx={selectedGate} gateReplacements={gateReplacements} replaceGate={replaceGate} />
           <spacer grow shape='invisible' />
           <image
             url="standard_measure.png"
@@ -108,7 +138,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
         </hstack>
       </zstack>
       <spacer grow shape='invisible' />
-      {bottomMenu(props.level.availableGates, selectedGate, selectGate)}
+      {bottomMenu(props.session.level.availableGates, selectedGate, selectGate)}
     </vstack>
   )
 }

@@ -1,6 +1,7 @@
 import { Devvit, useState } from '@devvit/public-api'
 import { LevelScreen } from './components/level_screen.js';
 import { TestLevel } from './levels/simplest.js';
+import { Session } from './levels/types.js';
 
 
 Devvit.configure({
@@ -39,7 +40,7 @@ Devvit.addCustomPostType({
   render: () => {
     return (
       //TODO: implement other screens etc.
-      <LevelScreen level={TestLevel} />
+      <LevelScreen session={new Session(TestLevel)} />
     )
   }
 })

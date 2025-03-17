@@ -140,7 +140,7 @@ export class PlaceholderGate implements Gate {
 
     constructor(affectedQubits: number[]) {
         this.affectedQubits = affectedQubits;
-        this.assets = [ID_ASSET];
+        this.assets = ["placeholder.png"];
     }
 
     simulate(input: Stabilizer[]): Stabilizer[] {
