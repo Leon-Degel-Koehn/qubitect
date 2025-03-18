@@ -55,11 +55,9 @@ const Gates = (props: GateProps): JSX.Element => {
             imageHeight="40px"
             imageWidth="40px"
             onPress={() => {
-              if (props.state.gateReplacements[idx] == props.state.selectedGate) {
-                props.state.replaceGate[idx](-1);
-              } else {
-                props.state.replaceGate[idx](props.state.selectedGate);
-              }
+              const newGateIdx = props.state.gateReplacements[idx] == props.state.selectedGate ? -1 : props.state.selectedGate;
+              props.state.replaceGate[idx](newGateIdx);
+              props.session.changeDisplayedGate(idx, newGateIdx);
             }}
           />
         </zstack>

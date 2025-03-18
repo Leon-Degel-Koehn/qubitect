@@ -25,14 +25,15 @@ export class Session {
         }
     }
 
-    //newGate is the index of the gate to display
-    changeDisplayedGate(idx: number, newGate: number) {
-        console.log("test");
-        if (!this.level.greyedOutIndices.includes(idx))
-            return;
-        // just to make sure no errors happen, if weird gates are passed
-        let gate = this.level.availableGates[newGate];
-        gate.affectedQubits = this.level.circuit.gates[idx].affectedQubits;
-        this.displayedCircuit.gates[idx] = gate;
+    changeDisplayedGate(greyedOutIdx: number, newGateIdx: number) {
+        let gateIdx = this.level.greyedOutIndices[greyedOutIdx];
+        let gate;
+        if (newGateIdx >= 0) {
+            gate = this.level.availableGates[newGateIdx];
+            gate.affectedQubits = this.level.circuit.gates[gateIdx].affectedQubits;
+        } else {
+            gate = new PlaceholderGate(this.level.circuit.gates[gateIdx].affectedQubits)
+        }
+        this.displayedCircuit.gates[gateIdx] = gate;
     }
 }
