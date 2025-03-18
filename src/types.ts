@@ -7,6 +7,9 @@ export interface Level {
     levelId?: number,
     circuit: Circuit,
     availableGates: Gate[],
+    inputState: Stabilizer[],
+    expectedResult: Stabilizer[],
+    greyedOutIndices: number[],
 }
 
 export class Circuit {
@@ -55,11 +58,73 @@ export class Stabilizer {
         return lhs.reduce((acc, x, i) => acc ^ x & rhs[i], 0);
     }
 
+    // assumes target qubits to be the right amount without checking
+    onQubits(targetQubits: number[], totalQubits: number): Stabilizer {
+        let x = Array(totalQubits).fill(0);
+        let z = Array(totalQubits).fill(0);
+        let i = 0;
+        for (let idx of targetQubits) {
+            x[idx] = this.x_part[i];
+            z[idx] = this.z_part[i];
+            i++;
+        }
+        return new Stabilizer(this.phase, x, z);
+    }
+
+
     to_string() {
         // TODO
     }
 }
 
+export interface KetState {
+    asset: string,
+    stabilizer: Stabilizer[],
+}
+
+export const KetZero: KetState = {
+    asset: "ket_0.png",
+    stabilizer: [
+        new Stabilizer(1, [0], [1]),
+    ],
+}
+
+export const KetOne: KetState = {
+    asset: "ket_1.png",
+    stabilizer: [
+        new Stabilizer(-1, [0], [1]),
+    ],
+}
+
+export const KetPlus: KetState = {
+    asset: "ket_plus.png",
+    stabilizer: [
+        new Stabilizer(1, [1], [0]),
+    ],
+}
+
+export const KetMinus: KetState = {
+    asset: "ket_minus.png",
+    stabilizer: [
+        new Stabilizer(-1, [1], [0]),
+    ],
+}
+
+// FIXME: implement like above
+export class UnknownKetState implements KetState {
+    asset: string;
+    stabilizer: Stabilizer[];
+
+    constructor() {
+        this.asset = "ket_unknown.png"
+        this.stabilizer = [
+            new Stabilizer(1, [0], [0]),
+        ]
+    }
+
+}
+
+// FIXME: Doesn' t work with our new stabilizer def
 function copyStabilizer(original: Stabilizer): Stabilizer {
     return Object.assign({}, original); // looks weird but is essentially .copy() in python
 }
@@ -90,6 +155,20 @@ export class Identity implements Gate {
     constructor(targetQubit: number) {
         this.affectedQubits = [targetQubit];
         this.assets = [ID_ASSET];
+    }
+
+    simulate(input: Stabilizer[]): Stabilizer[] {
+        return input;
+    }
+}
+
+export class PlaceholderGate implements Gate {
+    affectedQubits: number[];
+    assets: string[];
+
+    constructor(affectedQubits: number[]) {
+        this.affectedQubits = affectedQubits;
+        this.assets = ["placeholder.png"];
     }
 
     simulate(input: Stabilizer[]): Stabilizer[] {
