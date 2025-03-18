@@ -138,11 +138,6 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
           </vstack>
           <Gates session={props.session} state={state} />
           <spacer grow shape='invisible' />
-          <image
-            url="standard_measure.png"
-            imageHeight="40px"
-            imageWidth="40px"
-          />
         </hstack>
       </zstack>
       <spacer grow shape='invisible' />

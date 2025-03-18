@@ -58,6 +58,20 @@ export class Stabilizer {
         return lhs.reduce((acc, x, i) => acc ^ x & rhs[i], 0);
     }
 
+    // assumes target qubits to be the right amount without checking
+    onQubits(targetQubits: number[], totalQubits: number): Stabilizer {
+        let x = Array(totalQubits).fill(0);
+        let z = Array(totalQubits).fill(0);
+        let i = 0;
+        for (let idx of targetQubits) {
+            x[idx] = this.x_part[i];
+            z[idx] = this.z_part[i];
+            i++;
+        }
+        return new Stabilizer(this.phase, x, z);
+    }
+
+
     to_string() {
         // TODO
     }
