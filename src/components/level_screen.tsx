@@ -1,7 +1,6 @@
-import { Devvit, useState } from '@devvit/public-api';
-import { Gate, Identity, Level, PlaceholderGate } from '../types.js';
+import { Devvit, useState, StateSetter } from '@devvit/public-api';
+import { Gate, Identity } from '../types.js';
 import { stateFromStabilizer } from '../utils.js';
-import { Rect } from './rectangle.js';
 import { gateLayout } from '../ui/helper.js';
 import { Session } from '../levels/types.js';
 
@@ -40,9 +39,7 @@ const bottomMenu = (gates: Gate[], selectedGate: number, selectGate: Function) =
 
 interface GateProps {
   session: Session,
-  selectedGateIdx: number,
-  gateReplacements: number[],
-  replaceGate: Function[],
+  state: LevelScreenState,
 }
 
 const Gates = (props: GateProps): JSX.Element => {
@@ -55,17 +52,17 @@ const Gates = (props: GateProps): JSX.Element => {
         <zstack borderColor='Periwinkle-500' border='thick'>
           <image
             url={
-              props.gateReplacements[idx] >= 0 ?
-                props.session.level.availableGates[props.gateReplacements[idx]].assets[0]
+              props.state.gateReplacements[idx] >= 0 ?
+                props.session.level.availableGates[props.state.gateReplacements[idx]].assets[0]
                 : "placeholder.png"
             }
             imageHeight="40px"
             imageWidth="40px"
             onPress={() => {
-              if (props.gateReplacements[idx] == props.selectedGateIdx) {
-                props.replaceGate[idx](-1);
+              if (props.state.gateReplacements[idx] == props.state.selectedGate) {
+                props.state.replaceGate[idx](-1);
               } else {
-                props.replaceGate[idx](props.selectedGateIdx);
+                props.state.replaceGate[idx](props.state.selectedGate);
               }
             }}
           />
@@ -102,16 +99,31 @@ interface LevelScreenProps {
   session: Session;
 }
 
-export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
-  const [selectedGate, selectGate] = useState(-1)
-  let gateReplacements = [];
-  let replaceGate = [];
-  for (let i = 0; i < props.session.level.circuit.gates.length; i++) {
-    let temp = useState(-1);
-    gateReplacements.push(temp[0]);
-    replaceGate.push(temp[1]);
+class LevelScreenState {
+
+  // Global state variables
+  selectedGate: number;
+  selectGate: StateSetter<number>;
+
+  // Global setters of state variables
+  gateReplacements: number[];
+  replaceGate: StateSetter<number>[];
+
+  constructor(amount_gates: number) {
+    [this.selectedGate, this.selectGate] = useState(-1);
+    this.gateReplacements = [];
+    this.replaceGate = [];
+    for (let i = 0; i < amount_gates; i++) {
+      let temp = useState(-1);
+      this.gateReplacements.push(temp[0]);
+      this.replaceGate.push(temp[1]);
+    }
   }
-  const numQubits = 2;
+}
+
+export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
+  const state = new LevelScreenState(props.session.level.circuit.gates.length);
+  const numQubits = props.session.level.circuit.qubits;
   const ketInputStates = stateFromStabilizer(props.session.level.inputState);
   return (
     <vstack alignment='center middle' height='100%' gap='large' padding='medium' backgroundColor='white'>
@@ -128,7 +140,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
               />
             ))}
           </vstack>
-          <Gates session={props.session} selectedGateIdx={selectedGate} gateReplacements={gateReplacements} replaceGate={replaceGate} />
+          <Gates session={props.session} state={state} />
           <spacer grow shape='invisible' />
           <image
             url="standard_measure.png"
@@ -138,7 +150,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
         </hstack>
       </zstack>
       <spacer grow shape='invisible' />
-      {bottomMenu(props.session.level.availableGates, selectedGate, selectGate)}
+      {bottomMenu(props.session.level.availableGates, state.selectedGate, state.selectGate)}
     </vstack>
   )
 }

@@ -1,4 +1,4 @@
-import { Devvit, useState } from '@devvit/public-api'
+import { Devvit } from '@devvit/public-api'
 import { LevelScreen } from './components/level_screen.js';
 import { TestLevel } from './levels/simplest.js';
 import { Session } from './levels/types.js';
