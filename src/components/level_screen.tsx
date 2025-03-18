@@ -4,7 +4,7 @@ import { stateFromStabilizer } from '../utils.js';
 import { gateLayout } from '../ui/helper.js';
 import { Session } from '../levels/types.js';
 
-function qubitLines(numQubits: number) {
+const QubitLines = ({ numQubits }: { numQubits: number }): JSX.Element => {
   let lines = [<spacer height="20px" />];
   for (let i = 0; i < numQubits; i++) {
     lines.push(<hstack width="100%" height="1px" borderColor='black' />);
@@ -13,11 +13,7 @@ function qubitLines(numQubits: number) {
   return <vstack width="100%">{lines}</vstack>;
 }
 
-const bottomMenu = (gates: Gate[], selectedGate: number, selectGate: Function) => {
-  let mappedGates = [];
-  for (let i = 0; i < gates.length; i++) {
-    mappedGates.push({ 'gateAsset': gates[i].assets[0], 'idx': i });
-  }
+const GateSelectionMenu = (props: GateProps): JSX.Element => {
   return (<hstack
     alignment='center middle'
     gap='medium'
@@ -26,12 +22,12 @@ const bottomMenu = (gates: Gate[], selectedGate: number, selectGate: Function) =
     borderColor='black'
     cornerRadius='medium'
   >
-    {mappedGates.map(({ gateAsset: gateAsset, idx: idx }) => (
+    {props.session.level.availableGates.map((gate, idx) => (
       <image
-        url={gateAsset}
-        imageHeight={selectedGate >= 0 ? idx == selectedGate ? 50 : 30 : 40}
-        imageWidth={selectedGate >= 0 ? idx == selectedGate ? 50 : 30 : 40}
-        onPress={() => { selectGate(idx) }}
+        url={gate.assets[0]}
+        imageHeight={props.state.selectedGate >= 0 ? idx == props.state.selectedGate ? 50 : 30 : 40}
+        imageWidth={props.state.selectedGate >= 0 ? idx == props.state.selectedGate ? 50 : 30 : 40}
+        onPress={() => { props.state.selectGate(idx) }}
       />
     ))}
   </hstack>)
@@ -129,7 +125,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
     <vstack alignment='center middle' height='100%' gap='large' padding='medium' backgroundColor='white'>
       <spacer grow shape='invisible' />
       <zstack width="100%">
-        {qubitLines(numQubits)}
+        <QubitLines numQubits={numQubits} />
         <hstack width="100%">
           <vstack>
             {ketInputStates.map((ketState) => (
@@ -150,7 +146,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
         </hstack>
       </zstack>
       <spacer grow shape='invisible' />
-      {bottomMenu(props.session.level.availableGates, state.selectedGate, state.selectGate)}
+      <GateSelectionMenu session={props.session} state={state} />
     </vstack>
   )
 }
