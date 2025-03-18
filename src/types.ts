@@ -221,7 +221,7 @@ export class PauliX implements Gate {
             const z_part = stabilizer.z_part;
             let phase = stabilizer.phase;
             for (const affectedQubit of this.affectedQubits) {
-                phase *= -z_part[affectedQubit];
+                phase *= Math.pow(-1, z_part[affectedQubit]);
             }
             result.push(new Stabilizer(phase, x_part, z_part));
         }
@@ -246,7 +246,7 @@ export class PauliZ implements Gate {
             const z_part = stabilizer.z_part;
             let phase = stabilizer.phase;
             for (const affectedQubit of this.affectedQubits) {
-                phase *= -x_part[affectedQubit];
+                phase *= Math.pow(-1, x_part[affectedQubit]);
             }
             result.push(new Stabilizer(phase, x_part, z_part));
         }
