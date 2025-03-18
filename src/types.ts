@@ -96,6 +96,20 @@ export const KetOne: KetState = {
     ],
 }
 
+export const KetPlus: KetState = {
+    asset: "ket_plus.png",
+    stabilizer: [
+        new Stabilizer(1, [1], [0]),
+    ],
+}
+
+export const KetMinus: KetState = {
+    asset: "ket_minus.png",
+    stabilizer: [
+        new Stabilizer(-1, [1], [0]),
+    ],
+}
+
 // FIXME: implement like above
 export class UnknownKetState implements KetState {
     asset: string;

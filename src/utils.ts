@@ -1,4 +1,4 @@
-import { Stabilizer, KetState, KetZero, Circuit, Gate, KetOne } from "./types.js";
+import { Stabilizer, KetState, KetZero, Circuit, Gate, KetOne, KetPlus, KetMinus } from "./types.js";
 import * as math from 'mathjs';
 
 const isInStabilizerSet = (generator: Stabilizer, stabilizerSet: Stabilizer[]): boolean => {
@@ -29,7 +29,7 @@ const cartesianPower = (array: KetState[], n: number): KetState[][] => {
 	);
 };
 
-const knownStates = [KetZero, KetOne];
+const knownStates = [KetZero, KetOne, KetPlus, KetMinus];
 
 export const stateFromStabilizer = (stabilizer: Stabilizer[]): KetState[] => {
 	const num_qubits = stabilizer[0].x_part.length;
