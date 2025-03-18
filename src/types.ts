@@ -110,6 +110,8 @@ export const KetMinus: KetState = {
     ],
 }
 
+export const KNOWN_STATES = [KetZero, KetOne, KetMinus, KetPlus];
+
 // FIXME: implement like above
 export class UnknownKetState implements KetState {
     asset: string;

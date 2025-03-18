@@ -1,5 +1,6 @@
 import { useState } from "@devvit/public-api";
-import { Circuit, Gate, Level, PlaceholderGate } from "../types.js";
+import { Circuit, Gate, KNOWN_STATES, Level, PlaceholderGate } from "../types.js";
+import { stateFromStabilizer } from "../utils.js";
 
 export class Session {
     level: Level;
@@ -25,15 +26,17 @@ export class Session {
         }
     }
 
-    changeDisplayedGate(greyedOutIdx: number, newGateIdx: number) {
-        let gateIdx = this.level.greyedOutIndices[greyedOutIdx];
+    changeDisplayedGate(locationIdx: number, newGateIdx: number, updateOutput: Function) {
         let gate;
         if (newGateIdx >= 0) {
             gate = this.level.availableGates[newGateIdx];
-            gate.affectedQubits = this.level.circuit.gates[gateIdx].affectedQubits;
+            gate.affectedQubits = this.level.circuit.gates[locationIdx].affectedQubits;
         } else {
-            gate = new PlaceholderGate(this.level.circuit.gates[gateIdx].affectedQubits)
+            gate = new PlaceholderGate(this.level.circuit.gates[locationIdx].affectedQubits)
         }
-        this.displayedCircuit.gates[gateIdx] = gate;
+        this.displayedCircuit.gates[locationIdx] = gate;
+        const output = this.displayedCircuit.simulate(this.level.inputState);
+        const ketOutput = stateFromStabilizer(output);
+        updateOutput(ketOutput.map((ketState) => KNOWN_STATES.indexOf(ketState)));
     }
 }
