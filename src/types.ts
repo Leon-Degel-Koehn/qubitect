@@ -106,18 +106,21 @@ export const KetMinus: KetState = {
     stabilizer: [new Stabilizer(-1, [1], [0])],
 };
 
-export const KNOWN_STATES = [KetZero, KetOne, KetMinus, KetPlus];
+export const KetBellPlus: KetState = {
+    asset: "ket_bell_plus.png",
+    stabilizer: [
+        new Stabilizer(1, [1, 1], [0, 0]),
+        new Stabilizer(1, [0, 0], [1, 1]),
+    ],
+};
+
+export const KNOWN_STATES = [KetZero, KetOne, KetMinus, KetPlus, KetBellPlus];
 
 // FIXME: implement like above
-export class UnknownKetState implements KetState {
-    asset: string;
-    stabilizer: Stabilizer[];
-
-    constructor() {
-        this.asset = "ket_unknown.png";
-        this.stabilizer = [new Stabilizer(1, [0], [0])];
-    }
-}
+export const UnknownKetState: KetState = {
+    asset: "ket_unknown.png",
+    stabilizer: [new Stabilizer(1, [0], [0])],
+};
 
 // FIXME: Doesn' t work with our new stabilizer def
 function copyStabilizer(original: Stabilizer): Stabilizer {

@@ -1,13 +1,8 @@
 import {
     Stabilizer,
     KetState,
-    KetZero,
-    Circuit,
-    Gate,
-    KetOne,
-    KetPlus,
-    KetMinus,
     KNOWN_STATES,
+    UnknownKetState,
 } from "./types.js";
 import * as math from "mathjs";
 
@@ -49,34 +44,46 @@ const cartesianPower = (array: KetState[], n: number): KetState[][] => {
 
 export const stateFromStabilizer = (stabilizer: Stabilizer[]): KetState[] => {
     const num_qubits = stabilizer[0].x_part.length;
-    for (const stateCombo of cartesianPower(KNOWN_STATES, num_qubits)) {
-        let currStabilizer: Stabilizer[] = [];
-        for (let i = 0; i < stateCombo.length; i++) {
-            const substate = stateCombo[i];
-            const targetQubits: number[] = [];
-            for (
-                let targetQubit = i;
-                targetQubit - i < substate.stabilizer[0].x_part.length;
-                targetQubit++
-            ) {
-                targetQubits.push(targetQubit);
+    for (let comboLen = 1; comboLen < 2 * num_qubits; comboLen++) {
+        // just a heuristic on the upper loop bound
+        for (const stateCombo of cartesianPower(KNOWN_STATES, comboLen)) {
+            const affectedQubits = stateCombo
+                .map((s) => s.stabilizer[0])
+                .reduce((acc, curr) => acc + curr.x_part.length, 0);
+            if (affectedQubits > num_qubits) continue;
+            let currStabilizer: Stabilizer[] = [];
+            for (let i = 0, currQubit = 0; i < stateCombo.length; i++) {
+                const substate = stateCombo[i];
+                const targetQubits: number[] = [];
+                for (
+                    let targetQubit = currQubit;
+                    targetQubit - currQubit <
+                    substate.stabilizer[0].x_part.length;
+                    targetQubit++
+                ) {
+                    targetQubits.push(targetQubit);
+                }
+                currQubit += targetQubits.length;
+                currStabilizer = currStabilizer.concat(
+                    substate.stabilizer.map((generator) =>
+                        generator.onQubits(targetQubits, num_qubits),
+                    ),
+                );
             }
-            currStabilizer = currStabilizer.concat(
-                substate.stabilizer.map((generator) =>
-                    generator.onQubits(targetQubits, num_qubits),
-                ),
-            );
-        }
-        let contains = true;
-        for (const generator of currStabilizer) {
-            if (!isInStabilizerSet(generator, stabilizer)) {
-                contains = false;
+            let contains = true;
+            for (const generator of currStabilizer) {
+                if (!isInStabilizerSet(generator, stabilizer)) {
+                    contains = false;
+                }
             }
-        }
-        if (contains) {
-            return stateCombo;
+            contains =
+                contains &&
+                stabilizer.every((s) => isInStabilizerSet(s, currStabilizer));
+            if (contains) {
+                return stateCombo;
+            }
         }
     }
-    // unknown state, dummy return
-    return Array(num_qubits).fill(KetOne);
+    // TODO: allow for partial unknown and partially known state
+    return Array(num_qubits).fill(UnknownKetState);
 };

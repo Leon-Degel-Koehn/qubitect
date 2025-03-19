@@ -1,5 +1,12 @@
 import { TestLevel } from "../levels/simplest.js";
-import { KetMinus, KetOne, KetPlus, KetZero, Stabilizer } from "../types.js";
+import {
+    KetBellPlus,
+    KetMinus,
+    KetOne,
+    KetPlus,
+    KetZero,
+    Stabilizer,
+} from "../types.js";
 import { stateFromStabilizer } from "../utils.js";
 
 describe("State from stabilizer test", () => {
@@ -26,5 +33,36 @@ describe("State from stabilizer test", () => {
         const computedState = stateFromStabilizer(inputStabilizer);
         expect(computedState[0]).toBe(KetPlus);
         expect(computedState[1]).toBe(KetMinus);
+    });
+    test("Bell states are correctly identified", () => {
+        const inputStabilizer = KetBellPlus.stabilizer;
+        const computedState = stateFromStabilizer(inputStabilizer);
+        expect(computedState).toEqual([KetBellPlus]);
+    });
+    test("Combinations of multi- and single-qubit states work", () => {
+        const oneStabilizer = KetOne.stabilizer.map((s) => s.onQubits([0], 5));
+        const bellStabilizer = KetBellPlus.stabilizer.map((s) =>
+            s.onQubits([1, 2], 5),
+        );
+        const zeroStabilizer = KetZero.stabilizer.map((s) =>
+            s.onQubits([3], 5),
+        );
+        const plusStabilizer = KetPlus.stabilizer.map((s) =>
+            s.onQubits([4], 5),
+        );
+        const inputStabilizer = oneStabilizer.concat(
+            bellStabilizer,
+            zeroStabilizer,
+            plusStabilizer,
+        );
+        const computedState = stateFromStabilizer(inputStabilizer);
+        expect(computedState).toEqual([KetOne, KetBellPlus, KetZero, KetPlus]);
+    });
+    test("Combinations of bell states work", () => {
+        const s1 = KetBellPlus.stabilizer.map((s) => s.onQubits([0, 1], 4));
+        const s2 = KetBellPlus.stabilizer.map((s) => s.onQubits([2, 3], 4));
+        const inputStabilizer = s1.concat(s2);
+        const computedState = stateFromStabilizer(inputStabilizer);
+        expect(computedState).toEqual([KetBellPlus, KetBellPlus]);
     });
 });
