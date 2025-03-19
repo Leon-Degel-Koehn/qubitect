@@ -1,5 +1,5 @@
 import { Devvit, useState, StateSetter } from '@devvit/public-api';
-import { Gate, Identity, KNOWN_STATES, Level } from '../types.js';
+import { Gate, Identity, KNOWN_STATES } from '../types.js';
 import { stateFromStabilizer } from '../utils.js';
 import { gateLayout } from '../ui/helper.js';
 import { Session } from '../levels/types.js';
