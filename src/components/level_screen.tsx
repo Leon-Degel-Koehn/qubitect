@@ -1,5 +1,5 @@
 import { Devvit, useState, StateSetter } from '@devvit/public-api';
-import { Gate, Identity } from '../types.js';
+import { Gate, Identity, KNOWN_STATES } from '../types.js';
 import { stateFromStabilizer } from '../utils.js';
 import { gateLayout } from '../ui/helper.js';
 import { Session } from '../levels/types.js';
@@ -55,11 +55,9 @@ const Gates = (props: GateProps): JSX.Element => {
             imageHeight="40px"
             imageWidth="40px"
             onPress={() => {
-              if (props.state.gateReplacements[idx] == props.state.selectedGate) {
-                props.state.replaceGate[idx](-1);
-              } else {
-                props.state.replaceGate[idx](props.state.selectedGate);
-              }
+              const newGateIdx = props.state.gateReplacements[idx] == props.state.selectedGate ? -1 : props.state.selectedGate;
+              props.state.replaceGate[idx](newGateIdx);
+              props.session.changeDisplayedGate(idx, newGateIdx, props.state.updateOutputStates);
             }}
           />
         </zstack>
@@ -81,7 +79,7 @@ const Gates = (props: GateProps): JSX.Element => {
     }
   }));
   return (
-    <hstack gap='large'>
+    <hstack alignment="center" gap='large' grow>
       {mappedLayout.map((column) => (
         <vstack>
           {column}
@@ -91,6 +89,18 @@ const Gates = (props: GateProps): JSX.Element => {
   );
 }
 
+const OutputStates = (props: GateProps): JSX.Element => {
+  return props.state.outputStates.map((ketStateIdx, qubit) => (
+    <zstack borderColor={ketStateIdx == props.session.optimalOutput[qubit] ? 'success-plain' : 'danger-plain'} border='thick'>
+      <image
+        url={KNOWN_STATES[ketStateIdx].asset}
+        imageHeight="40px"
+        imageWidth="40px"
+      />
+    </zstack>
+  ))
+}
+
 interface LevelScreenProps {
   session: Session;
 }
@@ -98,18 +108,23 @@ interface LevelScreenProps {
 class LevelScreenState {
 
   // Global state variables
-  selectedGate: number;
-  selectGate: StateSetter<number>;
+  selectedGate: number; // index in the level's available gates
+  gateReplacements: number[]; // indices in the level's available gates
+  outputStates: number[]; // indices in the global KNOWN_STATES
 
   // Global setters of state variables
-  gateReplacements: number[];
   replaceGate: StateSetter<number>[];
+  selectGate: StateSetter<number>;
+  updateOutputStates: StateSetter<Array<number>>;
 
-  constructor(amount_gates: number) {
+  constructor(session: Session) {
     [this.selectedGate, this.selectGate] = useState(-1);
+    const initialOutput = stateFromStabilizer(session.displayedCircuit.simulate(session.level.inputState))
+      .map((ketState) => KNOWN_STATES.indexOf(ketState));
+    [this.outputStates, this.updateOutputStates] = useState(initialOutput);
     this.gateReplacements = [];
     this.replaceGate = [];
-    for (let i = 0; i < amount_gates; i++) {
+    for (let i = 0; i < session.level.circuit.gates.length; i++) {
       let temp = useState(-1);
       this.gateReplacements.push(temp[0]);
       this.replaceGate.push(temp[1]);
@@ -118,12 +133,12 @@ class LevelScreenState {
 }
 
 export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
-  const state = new LevelScreenState(props.session.level.circuit.gates.length);
+  const state = new LevelScreenState(props.session);
   const numQubits = props.session.level.circuit.qubits;
   const ketInputStates = stateFromStabilizer(props.session.level.inputState);
   return (
     <vstack alignment='center middle' height='100%' gap='large' padding='medium' backgroundColor='white'>
-      <spacer grow shape='invisible' />
+      {props.session.level.title ? (<text style='heading' color='global-black'>{props.session.level.title}</text>) : (<spacer grow shape='invisible' />)}
       <zstack width="100%">
         <QubitLines numQubits={numQubits} />
         <hstack width="100%">
@@ -138,9 +153,14 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
           </vstack>
           <Gates session={props.session} state={state} />
           <spacer grow shape='invisible' />
+          <vstack>
+            <OutputStates session={props.session} state={state} />
+          </vstack>
         </hstack>
       </zstack>
-      <spacer grow shape='invisible' />
+      <vstack grow alignment='center middle'>
+        <text>{props.session.level.objective || ''}</text>
+      </vstack>
       <GateSelectionMenu session={props.session} state={state} />
     </vstack>
   )

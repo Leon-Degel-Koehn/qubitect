@@ -1,5 +1,5 @@
 import { Session } from "../levels/types.js";
-import { Level, Gate, Identity, PlaceholderGate } from "../types.js";
+import { Gate, Identity } from "../types.js";
 
 type GateLayoutEntry = {
     originalIdx: number,

@@ -1,4 +1,6 @@
-import {Circuit, Stabilizer, PauliX, PauliZ, Hadamard, PauliY, Measurement} from '../types.js';
+import { TestLevel } from '../levels/simplest.js';
+import { Session } from '../levels/types.js';
+import { Circuit, Stabilizer, PauliX, PauliZ, Hadamard, PauliY, Measurement } from '../types.js';
 
 describe('CircuitSimulation tests', () => {
     test('Pauli X is a bit flip for computational basis states', () => {
@@ -40,6 +42,30 @@ describe('CircuitSimulation tests', () => {
         expect(result[0].phase).toBe(1);
         expect(result[0].x_part).toEqual([1]);
         expect(result[0].z_part).toEqual([0]);
+    });
+    test('Basic level circuit outputs correct result', () => {
+        const circuit = TestLevel.circuit;
+        const stabilizer = TestLevel.inputState;
+        const expectedResult = TestLevel.expectedResult;
+        const result = circuit.simulate(stabilizer);
+        expect(result.length).toBe(expectedResult.length);
+        expectedResult.forEach((stabilizer) => {
+            expect(result).toContainEqual(stabilizer);
+        })
+    });
+    test('Basic level with placeholders outputs correct result', () => {
+        const levelSession = new Session(TestLevel);
+        const circuit = levelSession.displayedCircuit;
+        const stabilizer = TestLevel.inputState;
+        const expectedResult = [
+            new Stabilizer(-1, [0, 0], [1, 0]),
+            new Stabilizer(1, [0, 0], [0, 1]),
+        ]
+        const result = circuit.simulate(stabilizer);
+        expect(result.length).toBe(expectedResult.length);
+        expectedResult.forEach((stabilizer) => {
+            expect(result).toContainEqual(stabilizer);
+        })
     });
     test('Measurement of deterministic state returns same state', () => {
         const gates = [new Measurement(new Stabilizer(1, [0], [1]))];

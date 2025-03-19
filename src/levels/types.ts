@@ -1,12 +1,15 @@
 import { useState } from "@devvit/public-api";
-import { Circuit, Gate, Level, PlaceholderGate } from "../types.js";
+import { Circuit, Gate, KNOWN_STATES, Level, PlaceholderGate } from "../types.js";
+import { stateFromStabilizer } from "../utils.js";
 
 export class Session {
     level: Level;
     displayedCircuit: Circuit;
+    optimalOutput: number[]; // indices of the ket states corresponding to the optimal output
 
     constructor(level: Level) {
         this.level = level;
+        this.optimalOutput = stateFromStabilizer(level.expectedResult).map((ket) => KNOWN_STATES.indexOf(ket));
         this.displayedCircuit = new Circuit(
             level.circuit.qubits,
             [],
@@ -25,14 +28,17 @@ export class Session {
         }
     }
 
-    //newGate is the index of the gate to display
-    changeDisplayedGate(idx: number, newGate: number) {
-        console.log("test");
-        if (!this.level.greyedOutIndices.includes(idx))
-            return;
-        // just to make sure no errors happen, if weird gates are passed
-        let gate = this.level.availableGates[newGate];
-        gate.affectedQubits = this.level.circuit.gates[idx].affectedQubits;
-        this.displayedCircuit.gates[idx] = gate;
+    changeDisplayedGate(locationIdx: number, newGateIdx: number, updateOutput: Function) {
+        let gate;
+        if (newGateIdx >= 0) {
+            gate = this.level.availableGates[newGateIdx];
+            gate.affectedQubits = this.level.circuit.gates[locationIdx].affectedQubits;
+        } else {
+            gate = new PlaceholderGate(this.level.circuit.gates[locationIdx].affectedQubits)
+        }
+        this.displayedCircuit.gates[locationIdx] = gate;
+        const output = this.displayedCircuit.simulate(this.level.inputState);
+        const ketOutput = stateFromStabilizer(output);
+        updateOutput(ketOutput.map((ketState) => KNOWN_STATES.indexOf(ketState)));
     }
 }

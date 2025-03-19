@@ -4,12 +4,13 @@ const ID_ASSET = "";
 
 export interface Level {
     // TODO: expand
-    levelId?: number,
     circuit: Circuit,
     availableGates: Gate[],
     inputState: Stabilizer[],
     expectedResult: Stabilizer[],
     greyedOutIndices: number[],
+    objective?: string, // A text to display to the user to clarify the task
+    title?: string, // The headline title of the puzzle
 }
 
 export class Circuit {
@@ -109,6 +110,8 @@ export const KetMinus: KetState = {
         new Stabilizer(-1, [1], [0]),
     ],
 }
+
+export const KNOWN_STATES = [KetZero, KetOne, KetMinus, KetPlus];
 
 // FIXME: implement like above
 export class UnknownKetState implements KetState {
@@ -221,7 +224,7 @@ export class PauliX implements Gate {
             const z_part = stabilizer.z_part;
             let phase = stabilizer.phase;
             for (const affectedQubit of this.affectedQubits) {
-                phase *= -z_part[affectedQubit];
+                phase *= Math.pow(-1, z_part[affectedQubit]);
             }
             result.push(new Stabilizer(phase, x_part, z_part));
         }
@@ -246,7 +249,7 @@ export class PauliZ implements Gate {
             const z_part = stabilizer.z_part;
             let phase = stabilizer.phase;
             for (const affectedQubit of this.affectedQubits) {
-                phase *= -x_part[affectedQubit];
+                phase *= Math.pow(-1, x_part[affectedQubit]);
             }
             result.push(new Stabilizer(phase, x_part, z_part));
         }
