@@ -5,9 +5,11 @@ import { stateFromStabilizer } from "../utils.js";
 export class Session {
     level: Level;
     displayedCircuit: Circuit;
+    optimalOutput: number[]; // indices of the ket states corresponding to the optimal output
 
     constructor(level: Level) {
         this.level = level;
+        this.optimalOutput = stateFromStabilizer(level.expectedResult).map((ket) => KNOWN_STATES.indexOf(ket));
         this.displayedCircuit = new Circuit(
             level.circuit.qubits,
             [],

@@ -20,4 +20,6 @@ export const TestLevel: Level = {
     new Hadamard(1),
   ]),
   greyedOutIndices: [2],
+  title: "The X is the Z in the X-Basis 🤯",
+  objective: "Create the output state |1>, |1>",
 };

@@ -79,7 +79,7 @@ const Gates = (props: GateProps): JSX.Element => {
     }
   }));
   return (
-    <hstack gap='large'>
+    <hstack alignment="center" gap='large' grow>
       {mappedLayout.map((column) => (
         <vstack>
           {column}
@@ -89,13 +89,15 @@ const Gates = (props: GateProps): JSX.Element => {
   );
 }
 
-const OutputStates = ({ state }: { state: LevelScreenState }): JSX.Element => {
-  return state.outputStates.map((ketStateIdx) => (
-    <image
-      url={KNOWN_STATES[ketStateIdx].asset}
-      imageHeight="40px"
-      imageWidth="40px"
-    />
+const OutputStates = (props: GateProps): JSX.Element => {
+  return props.state.outputStates.map((ketStateIdx, qubit) => (
+    <zstack borderColor={ketStateIdx == props.session.optimalOutput[qubit] ? 'success-plain' : 'danger-plain'} border='thick'>
+      <image
+        url={KNOWN_STATES[ketStateIdx].asset}
+        imageHeight="40px"
+        imageWidth="40px"
+      />
+    </zstack>
   ))
 }
 
@@ -136,7 +138,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
   const ketInputStates = stateFromStabilizer(props.session.level.inputState);
   return (
     <vstack alignment='center middle' height='100%' gap='large' padding='medium' backgroundColor='white'>
-      <spacer grow shape='invisible' />
+      {props.session.level.title ? (<text style='heading' color='global-black'>{props.session.level.title}</text>) : (<spacer grow shape='invisible' />)}
       <zstack width="100%">
         <QubitLines numQubits={numQubits} />
         <hstack width="100%">
@@ -152,11 +154,13 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
           <Gates session={props.session} state={state} />
           <spacer grow shape='invisible' />
           <vstack>
-            <OutputStates state={state} />
+            <OutputStates session={props.session} state={state} />
           </vstack>
         </hstack>
       </zstack>
-      <spacer grow shape='invisible' />
+      <vstack grow alignment='center middle'>
+        <text>{props.session.level.objective || ''}</text>
+      </vstack>
       <GateSelectionMenu session={props.session} state={state} />
     </vstack>
   )

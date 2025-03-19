@@ -4,12 +4,13 @@ const ID_ASSET = "";
 
 export interface Level {
     // TODO: expand
-    levelId?: number,
     circuit: Circuit,
     availableGates: Gate[],
     inputState: Stabilizer[],
     expectedResult: Stabilizer[],
     greyedOutIndices: number[],
+    objective?: string, // A text to display to the user to clarify the task
+    title?: string, // The headline title of the puzzle
 }
 
 export class Circuit {
