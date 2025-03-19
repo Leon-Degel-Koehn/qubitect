@@ -1,6 +1,15 @@
 import { TestLevel } from '../levels/simplest.js';
-import { Session } from '../levels/types.js';
-import { Circuit, Stabilizer, PauliX, PauliZ, Hadamard, PauliY, Measurement } from '../types.js';
+import { Session } from '../levels/types.js';import {
+    Circuit,
+    Stabilizer,
+    PauliX,
+    PauliZ,
+    Hadamard,
+    PauliY,
+    Measurement,
+    ControlledPauliX,
+    isInStabilizerSubspace
+} from '../types.js';
 
 describe('CircuitSimulation tests', () => {
     test('Pauli X is a bit flip for computational basis states', () => {
@@ -42,6 +51,15 @@ describe('CircuitSimulation tests', () => {
         expect(result[0].phase).toBe(1);
         expect(result[0].x_part).toEqual([1]);
         expect(result[0].z_part).toEqual([0]);
+    });
+    test('CNOT flips target qubit if control qubit is in |1> state', () => {
+        const gates = [new ControlledPauliX(0, 1)];
+        const circuit = new Circuit(2, gates);
+        const stabilizer = [new Stabilizer(1, [0, 0], [0, 1]), new Stabilizer(-1, [0, 0], [1, 0])];
+        const result = circuit.simulate(stabilizer);
+        expect(result.length).toBe(2);
+        const expectedStabilizer = [new Stabilizer(1, [0, 0], [1, 1]), new Stabilizer(-1, [0, 0], [1, 0])];
+        expect(expectedStabilizer.every(generator => isInStabilizerSubspace(generator, result))).toBe(true);
     });
     test('Basic level circuit outputs correct result', () => {
         const circuit = TestLevel.circuit;
