@@ -1,5 +1,6 @@
-import { TestLevel } from '../levels/simplest.js';
-import { Session } from '../levels/types.js';import {
+import {TestLevel} from '../levels/simplest.js';
+import {Session} from '../levels/types.js';
+import {
     Circuit,
     Stabilizer,
     PauliX,
@@ -8,7 +9,7 @@ import { Session } from '../levels/types.js';import {
     PauliY,
     Measurement,
     ControlledPauliX,
-    isInStabilizerSubspace
+    isInStabilizerSubspace, ControlledPauliZ
 } from '../types.js';
 
 describe('CircuitSimulation tests', () => {
@@ -60,6 +61,35 @@ describe('CircuitSimulation tests', () => {
         expect(result.length).toBe(2);
         const expectedStabilizer = [new Stabilizer(1, [0, 0], [1, 1]), new Stabilizer(-1, [0, 0], [1, 0])];
         expect(expectedStabilizer.every(generator => isInStabilizerSubspace(generator, result))).toBe(true);
+    });
+    test('CNOT acts as identity if control qubit is in |0> state', () => {
+        const gates = [new ControlledPauliX(0, 1)];
+        const circuit = new Circuit(2, gates);
+        const stabilizer = [new Stabilizer(1, [0, 0], [1, 0]), new Stabilizer(1, [0, 0], [0, 1])];
+        const result = circuit.simulate(stabilizer);
+        expect(result.length).toBe(2);
+        expect(result[0].phase).toBe(1);
+        expect(result[1].phase).toBe(1);
+        expect(stabilizer.every(generator => isInStabilizerSubspace(generator, result))).toBe(true);
+    });
+    test('CZ flips |+> to |-> state', () => {
+        const gates = [new ControlledPauliZ(0, 1)];
+        const circuit = new Circuit(2, gates);
+        const stabilizer = [new Stabilizer(-1, [0, 0], [1, 0]), new Stabilizer(1, [0, 1], [0, 0])];
+        const result = circuit.simulate(stabilizer);
+        expect(result.length).toBe(2);
+        const expectedStabilizer = [new Stabilizer(-1, [0, 0], [1, 0]), new Stabilizer(-1, [0, 1], [0, 0])];
+        expect(expectedStabilizer.every(generator => isInStabilizerSubspace(generator, result))).toBe(true);
+    });
+    test('CZ acts as identity if control qubit is in |0> state', () => {
+        const gates = [new ControlledPauliZ(0, 1)];
+        const circuit = new Circuit(2, gates);
+        const stabilizer = [new Stabilizer(1, [0, 0], [1, 0]), new Stabilizer(1, [0, 1], [0, 0])];
+        const result = circuit.simulate(stabilizer);
+        expect(result.length).toBe(2);
+        expect(result[0].phase).toBe(1);
+        expect(result[1].phase).toBe(1);
+        expect(stabilizer.every(generator => isInStabilizerSubspace(generator, result))).toBe(true);
     });
     test('Construct Bell-State using Hadamard and CNOT', () => {
         const gates = [new Hadamard(0), new ControlledPauliX(0, 1)];

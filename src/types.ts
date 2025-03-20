@@ -278,6 +278,20 @@ export class ControlledPauliX extends Gate {
     }
 }
 
+export class ControlledPauliZ extends Gate {
+    constructor(controlQubit: number, targetQubit: number) {
+        let affectedQubits = [controlQubit, targetQubit];
+        let assets = ["cz_control.png", "cz_target.png"];
+        let actionTable = new ActionTable([
+            [new Stabilizer(1, [1, 0], [0, 0]), new Stabilizer(1, [1, 0], [0, 1])],
+            [new Stabilizer(1, [0, 0], [1, 0]), new Stabilizer(1, [0, 0], [1, 0])],
+            [new Stabilizer(1, [0, 1], [0, 0]), new Stabilizer(1, [0, 1], [1, 0])],
+            [new Stabilizer(1, [0, 0], [0, 1]), new Stabilizer(1, [0, 0], [0, 1])]
+        ], affectedQubits);
+        super(affectedQubits, assets, actionTable);
+    }
+}
+
 export class Measurement extends Gate {
     measurementOperator: Stabilizer;
 
