@@ -163,8 +163,8 @@ export class ActionTable {
 
     applyAction(stabilizer: Stabilizer, action: Stabilizer): Stabilizer {
         // Apply the action to the stabilizer
-        let x_part = stabilizer.x_part;
-        let z_part = stabilizer.z_part;
+        let x_part = [...stabilizer.x_part];
+        let z_part = [...stabilizer.z_part];
         for (let i = 0; i < this.affectedQubits.length; i++) {
             x_part[this.affectedQubits[i]] = action.x_part[i];
         }
