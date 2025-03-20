@@ -1,7 +1,7 @@
 import { Devvit, useState, StateSetter } from '@devvit/public-api';
 import { Gate, Identity, KNOWN_STATES, UnknownKetState } from '../types.js';
 import { stateFromStabilizer } from '../utils.js';
-import { gateLayout } from '../ui/helper.js';
+import { GateLayout, gateLayout } from '../ui/helper.js';
 import { Session } from '../levels/types.js';
 
 const QubitLines = ({ numQubits }: { numQubits: number }): JSX.Element => {
@@ -38,45 +38,83 @@ interface GateProps {
   state: LevelScreenState,
 }
 
-const Gates = (props: GateProps): JSX.Element => {
-  let layout = gateLayout(props.session);
-  let mappedLayout = layout.map((col) => col.map((gateEntry) => {
+const Gates = ({ props, layout }: { props: GateProps, layout: GateLayout }): JSX.Element => {
+  // make sure the internal representation of the gates is up to date
+  props.state.gateReplacements.forEach((gateReplacement, idx) => {
+    props.session.changeDisplayedGate(idx, gateReplacement);
+  })
+  console.log(props.session.displayedCircuit);
+  let mappedLayout = layout.map((col) => col.map((gateEntry, rowIdx) => {
     let gate: Gate = gateEntry.gate;
     let idx: number = gateEntry.originalIdx;
-    if (props.session.level.greyedOutIndices.includes(idx)) {
-      return (
-        <zstack borderColor='Periwinkle-500' border='thick'>
+    // no gate, blank space
+    // special case, if there was a greyed out gate on the previous qubit that has
+    // been replaced with a two qubit gate
+    if (gate instanceof Identity) {
+      const prevGate = rowIdx > 0 ? col[rowIdx - 1] : null;
+      let lastIdx = -1;
+      if (prevGate) {
+        lastIdx = prevGate.originalIdx;
+      }
+      if (props.session.level.greyedOutIndices.includes(lastIdx) && props.state.gateReplacements[lastIdx] >= 0
+        && props.session.level.availableGates[props.state.gateReplacements[lastIdx]].assets.length == 2) {
+        return (
           <image
-            url={
-              props.state.gateReplacements[idx] >= 0 ?
-                props.session.level.availableGates[props.state.gateReplacements[idx]].assets[0]
-                : "placeholder.png"
-            }
+            url={props.session.level.availableGates[props.state.gateReplacements[lastIdx]].assets[1]}
             imageHeight="40px"
             imageWidth="40px"
-            onPress={() => {
-              const newGateIdx = props.state.gateReplacements[idx] == props.state.selectedGate ? -1 : props.state.selectedGate;
-              props.state.replaceGate[idx](newGateIdx);
-              props.session.changeDisplayedGate(idx, newGateIdx, props.state.updateOutputStates);
-            }}
           />
-        </zstack>
-      )
-    }
-    if (gate instanceof Identity) {
+        )
+      }
       return (
         <spacer height="40px" />
       )
-    } else {
+    }
+    // regular gate, no interaction from the user possible
+    if (!(props.session.level.greyedOutIndices.includes(idx))) {
       return (
         <image
-          //TODO: assets for multiqubit gate not supported, therefore [0] access for now
-          url={gate.assets[0]}
+          url={gate.assets[gateEntry.idxInAffectedQubits]}
           imageHeight="40px"
           imageWidth="40px"
         />
       )
     }
+    // gate is at a spot with user interaction possible
+    // 1. current entry is not the interactive one and none is placed
+    if (gateEntry.idxInAffectedQubits > 0 && props.state.gateReplacements[idx] < 0) {
+      return (
+        <spacer height="40px" />
+      )
+    }
+    const replacement = props.state.gateReplacements[idx];
+    let asset = "placeholder.png";
+    if (replacement >= 0) {
+      const assetsList = props.session.level.availableGates[replacement].assets;
+      if (gateEntry.idxInAffectedQubits >= assetsList.length) {
+        return (
+          <spacer height="40px" />
+        )
+      }
+      asset = assetsList[gateEntry.idxInAffectedQubits];
+    }
+    // 2. current entry is the interactive one or has been replaced
+    return (
+      <zstack borderColor='Periwinkle-500' border='thick'>
+        <image
+          url={asset}
+          imageHeight="40px"
+          imageWidth="40px"
+          onPress={() => {
+            if (gateEntry.idxInAffectedQubits > 0) return;
+            const newGateIdx = props.state.gateReplacements[idx] == props.state.selectedGate ? -1 : props.state.selectedGate;
+            props.state.replaceGate[idx](newGateIdx);
+            props.session.changeDisplayedGate(idx, newGateIdx);
+            props.session.updateOutput(props.state.updateOutputStates);
+          }}
+        />
+      </zstack>
+    )
   }));
   return (
     <hstack alignment="center" gap='large' grow>
@@ -139,6 +177,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
   const state = new LevelScreenState(props.session);
   const numQubits = props.session.level.circuit.qubits;
   const ketInputStates = stateFromStabilizer(props.session.level.inputState);
+  const layout = gateLayout(props.session);
   return (
     <vstack alignment='center middle' height='100%' gap='large' padding='medium' backgroundColor='white'>
       {props.session.level.title ? (<text style='heading' color='global-black'>{props.session.level.title}</text>) : (<spacer grow shape='invisible' />)}
@@ -154,7 +193,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
               />
             ))}
           </vstack>
-          <Gates session={props.session} state={state} />
+          <Gates props={{ session: props.session, state: state }} layout={layout} />
           <spacer grow shape='invisible' />
           <vstack>
             <OutputStates session={props.session} state={state} />
