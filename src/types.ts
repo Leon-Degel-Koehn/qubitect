@@ -132,176 +132,179 @@ function copyStabilizer(original: Stabilizer): Stabilizer {
     return Object.assign({}, original); // looks weird but is essentially .copy() in python
 }
 
+export class ActionTable {
+    stabilizersWithAction: [Stabilizer, Stabilizer][]; // Pair of stabilizer and action
+    affectedQubits: number[];
+
+    constructor(stabilizersWithAction: [Stabilizer, Stabilizer][], affectedQubits: number[]) {
+        this.stabilizersWithAction = stabilizersWithAction;
+        this.affectedQubits = affectedQubits;
+    }
+
+
+    // Return iterator for all matching actions
+    * findAllMatchingActions(stabilizer: Stabilizer): Iterable<Stabilizer> {
+        // Check for all actions that have ones at the same indices as the stabilizer
+        for (const [stabilizerToMatch, action] of this.stabilizersWithAction) {
+            // Do this by performing a logical AND between the stabilizer and the stabilizer to match
+            // Then check if the result is equal to the stabilizer to match
+            let matches = true;
+            for (let i = 0; i < this.affectedQubits.length; i++) {
+                matches = matches && (stabilizer.x_part[this.affectedQubits[i]] & stabilizerToMatch.x_part[i]) == stabilizerToMatch.x_part[i];
+            }
+            for (let i = 0; i < this.affectedQubits.length; i++) {
+                matches = matches && (stabilizer.z_part[this.affectedQubits[i]] & stabilizerToMatch.z_part[i]) == stabilizerToMatch.z_part[i];
+            }
+            if (matches) {
+                yield action;
+            }
+        }
+    }
+
+    applyAction(stabilizer: Stabilizer, action: Stabilizer): Stabilizer {
+        // Apply the action to the stabilizer
+        let x_part = [...stabilizer.x_part];
+        let z_part = [...stabilizer.z_part];
+        for (let i = 0; i < this.affectedQubits.length; i++) {
+            x_part[this.affectedQubits[i]] = action.x_part[i];
+        }
+        for (let i = 0; i < this.affectedQubits.length; i++) {
+            z_part[this.affectedQubits[i]] = action.z_part[i];
+        }
+        return new Stabilizer(stabilizer.phase * action.phase, x_part, z_part);
+    }
+}
+
 /*
  * Gates act on a specific subset of qubits.
  * The order of specification on which qubits they act is important.
  * A CNOT with control on qubit 3 and target qubit 2 should have affectedQubits = [3,2]
  * The assets need to be defined analogously, the control dot asset must be specified first.
  */
-export interface Gate {
-    affectedQubits: number[],
-    assets: string[],
+export class Gate {
+    affectedQubits: number[];
+    assets: string[];
+    actionTable: ActionTable;
 
-    // Specifying pairs of connected qubits leads there to be a line connecting the two in the UI
-    // This is necessary for example to create a CNOT.
-    connectedQubits?: [number, number][],
+
+    // Default constructor to be used by child classes
+    constructor(affectedQubits: number[], assets: string[], actionTable: ActionTable) {
+        this.affectedQubits = affectedQubits;
+        this.assets = assets;
+        this.actionTable = actionTable;
+    }
 
     // Function that maps from stabilizers to stabilizers, with an optional measurement result
     // if the gate is to define a measurement.
-    simulate(input: Stabilizer[]): Stabilizer[];
-}
-
-export class Identity implements Gate {
-    affectedQubits: number[];
-    assets: string[];
-
-    constructor(targetQubit: number) {
-        this.affectedQubits = [targetQubit];
-        this.assets = [ID_ASSET];
-    }
-
     simulate(input: Stabilizer[]): Stabilizer[] {
-        return input;
+        // Iterate over all stabilizers and apply the action of the gate
+        let result = []
+        for (const stabilizer of input) {
+            let resultingStabilizer = new Stabilizer(1, Array(this.affectedQubits.length).fill(0), Array(this.affectedQubits.length).fill(0));
+            for (const action of this.actionTable.findAllMatchingActions(stabilizer)) {
+                resultingStabilizer = resultingStabilizer.add(action);
+            }
+            result.push(this.actionTable.applyAction(stabilizer, resultingStabilizer));
+        }
+        return result;
     }
 }
 
-export class PlaceholderGate implements Gate {
-    affectedQubits: number[];
-    assets: string[];
+export class Identity extends Gate {
+    constructor(targetQubit: number) {
+        super([targetQubit], [ID_ASSET], new ActionTable([], []));
+    }
+}
 
+export class PlaceholderGate extends Gate {
     constructor(affectedQubits: number[]) {
-        this.affectedQubits = affectedQubits;
-        this.assets = ["placeholder.png"];
-    }
-
-    simulate(input: Stabilizer[]): Stabilizer[] {
-        return input;
+        super(affectedQubits, ["placeholder.png"], new ActionTable([], []));
     }
 }
 
-export class Hadamard implements Gate {
-    affectedQubits: number[];
-    assets: string[];
-
+export class PauliX extends Gate {
     constructor(targetQubit: number) {
-        this.affectedQubits = [targetQubit];
-        this.assets = ["hadamard.png"];
-    }
-
-    simulate(input: Stabilizer[]): Stabilizer[] {
-        // Swap the X and Z parts of the stabilizer
-        const result = [];
-        for (const stabilizer of input) {
-            const x_part = stabilizer.x_part;
-            const z_part = stabilizer.z_part;
-            for (const affectedQubit of this.affectedQubits) {
-                // Swap the X and Z parts of the stabilizer
-                // FIXME: Old stabilizer is not preserved
-                const temp = x_part[affectedQubit];
-                x_part[affectedQubit] = z_part[affectedQubit];
-                z_part[affectedQubit] = temp;
-            }
-            result.push(new Stabilizer(stabilizer.phase, x_part, z_part));
-        }
-        return result;
+        let affectedQubits = [targetQubit];
+        let assets = ["pauli_x.png"];
+        let actionTable = new ActionTable([
+            [new Stabilizer(1, [0], [1]), new Stabilizer(-1, [0], [1])]], affectedQubits);
+        super(affectedQubits, assets, actionTable);
     }
 }
 
-export class PauliX implements Gate {
-    affectedQubits: number[];
-    assets: string[];
-
+export class PauliZ extends Gate {
     constructor(targetQubit: number) {
-        this.affectedQubits = [targetQubit];
-        this.assets = ["pauli_x.png"];
-    }
-
-    simulate(input: Stabilizer[]): Stabilizer[] {
-        // Flip phase of Z part
-        const result = [];
-        for (const stabilizer of input) {
-            const x_part = stabilizer.x_part;
-            const z_part = stabilizer.z_part;
-            let phase = stabilizer.phase;
-            for (const affectedQubit of this.affectedQubits) {
-                phase *= Math.pow(-1, z_part[affectedQubit]);
-            }
-            result.push(new Stabilizer(phase, x_part, z_part));
-        }
-        return result;
+        let affectedQubits = [targetQubit];
+        let assets = ["pauli_z.png"];
+        let actionTable = new ActionTable([
+            [new Stabilizer(1, [1], [0]), new Stabilizer(-1, [1], [0])]], affectedQubits);
+        super(affectedQubits, assets, actionTable);
     }
 }
 
-export class PauliZ implements Gate {
-    affectedQubits: number[];
-    assets: string[];
-
+export class PauliY extends Gate {
     constructor(targetQubit: number) {
-        this.affectedQubits = [targetQubit];
-        this.assets = ["pauli_z.png"];
-    }
-
-    simulate(input: Stabilizer[]): Stabilizer[] {
-        // Flip phase of X part
-        const result = [];
-        for (const stabilizer of input) {
-            const x_part = stabilizer.x_part;
-            const z_part = stabilizer.z_part;
-            let phase = stabilizer.phase;
-            for (const affectedQubit of this.affectedQubits) {
-                phase *= Math.pow(-1, x_part[affectedQubit]);
-            }
-            result.push(new Stabilizer(phase, x_part, z_part));
-        }
-        return result;
+        let affectedQubits = [targetQubit];
+        let assets = ["pauli_y.png"];
+        let actionTable = new ActionTable([
+            [new Stabilizer(1, [0], [1]), new Stabilizer(-1, [0], [1])],
+            [new Stabilizer(1, [1], [0]), new Stabilizer(-1, [1], [0])]], affectedQubits);
+        super(affectedQubits, assets, actionTable);
     }
 }
 
-export class PauliY implements Gate {
-    affectedQubits: number[];
-    assets: string[];
-
+export class Hadamard extends Gate {
     constructor(targetQubit: number) {
-        this.affectedQubits = [targetQubit];
-        this.assets = ["pauli_y.png"];
-    }
-
-    simulate(input: Stabilizer[]): Stabilizer[] {
-        // Flip phase of Z and X part
-        const result = [];
-        for (const stabilizer of input) {
-            const x_part = stabilizer.x_part;
-            const z_part = stabilizer.z_part;
-            let phase = stabilizer.phase;
-            for (const affectedQubit of this.affectedQubits) {
-                phase *= Math.pow(-1, z_part[affectedQubit] + x_part[affectedQubit]);
-            }
-            result.push(new Stabilizer(phase, x_part, z_part));
-        }
-        return result;
+        let affectedQubits = [targetQubit];
+        let assets = ["hadamard.png"];
+        let actionTable = new ActionTable([
+            [new Stabilizer(1, [0], [1]), new Stabilizer(1, [1], [0])],
+            [new Stabilizer(1, [1], [0]), new Stabilizer(1, [0], [1])]], affectedQubits);
+        super(affectedQubits, assets, actionTable);
     }
 }
 
-export class Measurement implements Gate {
-    affectedQubits: number[];
-    assets: string[];
+export class ControlledPauliX extends Gate {
+    constructor(controlQubit: number, targetQubit: number) {
+        let affectedQubits = [controlQubit, targetQubit];
+        let assets = ["cnot_control.png", "cnot_target.png"];
+        let actionTable = new ActionTable([
+            [new Stabilizer(1, [1, 0], [0, 0]), new Stabilizer(1, [1, 1], [0, 0])],
+            [new Stabilizer(1, [0, 1], [0, 0]), new Stabilizer(1, [0, 1], [0, 0])],
+            [new Stabilizer(1, [0, 0], [1, 0]), new Stabilizer(1, [0, 0], [1, 0])],
+            [new Stabilizer(1, [0, 0], [0, 1]), new Stabilizer(1, [0, 0], [1, 1])]
+        ], affectedQubits);
+        super(affectedQubits, assets, actionTable);
+    }
+}
+
+export class ControlledPauliZ extends Gate {
+    constructor(controlQubit: number, targetQubit: number) {
+        let affectedQubits = [controlQubit, targetQubit];
+        let assets = ["cz_control.png", "cz_target.png"];
+        let actionTable = new ActionTable([
+            [new Stabilizer(1, [1, 0], [0, 0]), new Stabilizer(1, [1, 0], [0, 1])],
+            [new Stabilizer(1, [0, 0], [1, 0]), new Stabilizer(1, [0, 0], [1, 0])],
+            [new Stabilizer(1, [0, 1], [0, 0]), new Stabilizer(1, [0, 1], [1, 0])],
+            [new Stabilizer(1, [0, 0], [0, 1]), new Stabilizer(1, [0, 0], [0, 1])]
+        ], affectedQubits);
+        super(affectedQubits, assets, actionTable);
+    }
+}
+
+export class Measurement extends Gate {
     measurementOperator: Stabilizer;
 
     constructor(measurementOperator: Stabilizer) {
-        // Affected qubits can be derived from the stabilizer
+        // TODO: Affected qubits can be derived from the stabilizer
+        super([], ["standard_measure.png"], new ActionTable([], []));
         this.affectedQubits = [];
-        this.assets = ["standard_measure.png"];
         this.measurementOperator = measurementOperator;
     }
 
-    simulate(input: Stabilizer[]): Stabilizer[] {
-        // Check if measurement operator commutes with all stabilizer generators
-        let commutes = true;
-        for (const stabilizer of input) {
-            commutes = commutes && this.measurementOperator.commutes_with(stabilizer);
-        }
-        // If it commutes, the measurement is deterministic
-        if (commutes) {
+    override simulate(input: Stabilizer[]): Stabilizer[] {
+        // Check if measurement operator is in the stabilizer subspace => measurement result is deterministic
+        if (isInStabilizerSubspace(this.measurementOperator, input)) {
             // Calculate measurement outcome by checking if +P (=0) is in the stabilizer subspace or -P(=1)
             // TODO: Move this to a dedicated function
             let basisMatrix = input.map(stabilizer => stabilizer.x_part.concat(stabilizer.z_part));
@@ -350,4 +353,8 @@ export class Measurement implements Gate {
             return postMeasurementStabilizers;
         }
     }
+}
+
+export function isInStabilizerSubspace(stabilizer: Stabilizer, generators: Stabilizer[]): boolean {
+    return generators.every(generator => generator.commutes_with(stabilizer));
 }
