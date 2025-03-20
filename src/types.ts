@@ -200,11 +200,16 @@ export class Gate {
         // Iterate over all stabilizers and apply the action of the gate
         let result = []
         for (const stabilizer of input) {
-            let resultingStabilizer = new Stabilizer(1, Array(this.affectedQubits.length).fill(0), Array(this.affectedQubits.length).fill(0));
-            for (const action of this.actionTable.findAllMatchingActions(stabilizer)) {
-                resultingStabilizer = resultingStabilizer.add(action);
+            const actions = [...this.actionTable.findAllMatchingActions(stabilizer)];
+            if (actions.length > 0) {
+                let resultingStabilizer = new Stabilizer(1, Array(this.affectedQubits.length).fill(0), Array(this.affectedQubits.length).fill(0));
+                for (const action of this.actionTable.findAllMatchingActions(stabilizer)) {
+                    resultingStabilizer = resultingStabilizer.add(action);
+                }
+                result.push(this.actionTable.applyAction(stabilizer, resultingStabilizer));
+            } else {
+                result.push(stabilizer);
             }
-            result.push(this.actionTable.applyAction(stabilizer, resultingStabilizer));
         }
         return result;
     }
