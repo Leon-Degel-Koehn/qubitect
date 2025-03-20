@@ -216,6 +216,12 @@ export class Identity extends Gate {
     }
 }
 
+export class PlaceholderGate extends Gate {
+    constructor(affectedQubits: number[]) {
+        super(affectedQubits, ["placeholder.png"], new ActionTable([], []));
+    }
+}
+
 export class PauliX extends Gate {
     constructor(targetQubit: number) {
         let affectedQubits = [targetQubit];
