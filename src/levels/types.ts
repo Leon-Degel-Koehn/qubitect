@@ -32,7 +32,6 @@ export class Session {
         const output = this.displayedCircuit.simulate(this.level.inputState);
         const ketOutput = stateFromStabilizer(output);
         updateCallback(ketOutput.map((ketState) => KNOWN_STATES.indexOf(ketState)));
-        console.log("output states updated");
     }
 
     changeDisplayedGate(locationIdx: number, newGateIdx: number) {
@@ -44,13 +43,12 @@ export class Session {
             gate.affectedQubits = this.level.circuit.gates[locationIdx].affectedQubits.slice(0, gateSize);
             let max = Math.max(...gate.affectedQubits);
             while (gateSize > gate.affectedQubits.length) {
-                gate.affectedQubits.push(++max);
+                gate.affectedQubits.push(++max % this.level.circuit.qubits);
             }
         } else {
             gate = new PlaceholderGate(this.level.circuit.gates[locationIdx].affectedQubits)
         }
         gate.actionTable.affectedQubits = gate.affectedQubits;
         this.displayedCircuit.gates[locationIdx] = gate;
-        console.log("displayed gates updated");
     }
 }

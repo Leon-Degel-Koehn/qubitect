@@ -43,7 +43,6 @@ const Gates = ({ props, layout }: { props: GateProps, layout: GateLayout }): JSX
   props.state.gateReplacements.forEach((gateReplacement, idx) => {
     props.session.changeDisplayedGate(idx, gateReplacement);
   })
-  console.log(props.session.displayedCircuit);
   let mappedLayout = layout.map((col) => col.map((gateEntry, rowIdx) => {
     let gate: Gate = gateEntry.gate;
     let idx: number = gateEntry.originalIdx;
@@ -51,7 +50,7 @@ const Gates = ({ props, layout }: { props: GateProps, layout: GateLayout }): JSX
     // special case, if there was a greyed out gate on the previous qubit that has
     // been replaced with a two qubit gate
     if (gate instanceof Identity) {
-      const prevGate = rowIdx > 0 ? col[rowIdx - 1] : null;
+      const prevGate = rowIdx > 0 ? col[(rowIdx - 1)] : col[col.length - 1];
       let lastIdx = -1;
       if (prevGate) {
         lastIdx = prevGate.originalIdx;
@@ -100,7 +99,7 @@ const Gates = ({ props, layout }: { props: GateProps, layout: GateLayout }): JSX
     }
     // 2. current entry is the interactive one or has been replaced
     return (
-      <zstack borderColor='Periwinkle-500' border='thick'>
+      <zstack borderColor='Periwinkle-500' border={gateEntry.idxInAffectedQubits > 0 ? 'none' : 'thick'}>
         <image
           url={asset}
           imageHeight="40px"
