@@ -3,6 +3,7 @@ import { Gate, Identity, KNOWN_STATES, UnknownKetState } from '../types.js';
 import { stateFromStabilizer } from '../utils.js';
 import { GateLayout, gateLayout } from '../ui/helper.js';
 import { Session } from '../levels/types.js';
+import { Direction, Line } from './line.js';
 
 const QubitLines = ({ numQubits }: { numQubits: number }): JSX.Element => {
   let lines = [<spacer height="20px" />];
@@ -58,11 +59,14 @@ const Gates = ({ props, layout }: { props: GateProps, layout: GateLayout }): JSX
       if (props.session.level.greyedOutIndices.includes(lastIdx) && props.state.gateReplacements[lastIdx] >= 0
         && props.session.level.availableGates[props.state.gateReplacements[lastIdx]].assets.length == 2) {
         return (
-          <image
-            url={props.session.level.availableGates[props.state.gateReplacements[lastIdx]].assets[1]}
-            imageHeight="40px"
-            imageWidth="40px"
-          />
+          <zstack alignment='center'>
+            <Line length={40} thickness={1} direction={Direction.Vertical} />
+            <image
+              url={props.session.level.availableGates[props.state.gateReplacements[lastIdx]].assets[1]}
+              imageHeight="40px"
+              imageWidth="40px"
+            />
+          </zstack>
         )
       }
       return (
@@ -71,13 +75,26 @@ const Gates = ({ props, layout }: { props: GateProps, layout: GateLayout }): JSX
     }
     // regular gate, no interaction from the user possible
     if (!(props.session.level.greyedOutIndices.includes(idx))) {
-      return (
+      const res = (
         <image
           url={gate.assets[gateEntry.idxInAffectedQubits]}
           imageHeight="40px"
           imageWidth="40px"
         />
       )
+      let wrapper = null
+      if (gate.assets.length > 1) {
+        if (gateEntry.idxInAffectedQubits > 0) {
+          wrapper = (<Line length={40} thickness={1} direction={Direction.Vertical} />)
+        } else {
+          if (gate.affectedQubits[1] > gate.affectedQubits[0]) {
+            wrapper = <vstack><spacer height="20px" /><Line length={20} thickness={1} direction={Direction.Vertical} /></vstack>
+          } else {
+            wrapper = <vstack><Line length={20} thickness={1} direction={Direction.Vertical} /><spacer height="20px" /></vstack>
+          }
+        }
+      }
+      return <zstack alignment="center">{wrapper}{res}</zstack>;
     }
     // gate is at a spot with user interaction possible
     // 1. current entry is not the interactive one and none is placed
@@ -97,9 +114,18 @@ const Gates = ({ props, layout }: { props: GateProps, layout: GateLayout }): JSX
       }
       asset = assetsList[gateEntry.idxInAffectedQubits];
     }
+    const controlBeforeTarget = props.session.displayedCircuit.gates[idx].affectedQubits.length > 1 &&
+      props.session.displayedCircuit.gates[idx].affectedQubits[0] < props.session.displayedCircuit.gates[idx].affectedQubits[1]
     // 2. current entry is the interactive one or has been replaced
     return (
-      <zstack borderColor='Periwinkle-500' border={gateEntry.idxInAffectedQubits > 0 ? 'none' : 'thick'}>
+      <zstack borderColor='Periwinkle-500' border={gateEntry.idxInAffectedQubits > 0 ? 'none' : 'thick'} alignment='center'>
+        {replacement >= 0 && props.session.level.availableGates[props.state.gateReplacements[idx]].affectedQubits.length > 1 ?
+          asset === props.session.level.availableGates[props.state.gateReplacements[idx]].assets[0] ?
+            controlBeforeTarget ?
+              <vstack><spacer height="20px" /><Line length={20} thickness={1} direction={Direction.Vertical} /></vstack>
+              : <vstack><Line length={20} thickness={1} direction={Direction.Vertical} /><spacer height="20px" /></vstack>
+            : <Line length={40} thickness={1} direction={Direction.Vertical} />
+          : ""}
         <image
           url={asset}
           imageHeight="40px"
