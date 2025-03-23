@@ -119,7 +119,31 @@ export const KetBellPlus: KetState = {
     ],
 }
 
-export const KNOWN_STATES = [KetZero, KetOne, KetMinus, KetPlus, KetBellPlus];
+export const KetBellMinus: KetState = {
+    asset: "ket_bell_minus.png",
+    stabilizer: [
+        new Stabilizer(-1, [1, 1], [0, 0]),
+        new Stabilizer(1, [0, 0], [1, 1]),
+    ],
+}
+
+export const KetPsiPlus: KetState = {
+    asset: "ket_psi_plus.png",
+    stabilizer: [
+        new Stabilizer(1, [1, 1], [0, 0]),
+        new Stabilizer(-1, [0, 0], [1, 1]),
+    ],
+}
+
+export const KetPsiMinus: KetState = {
+    asset: "ket_psi_minus.png",
+    stabilizer: [
+        new Stabilizer(-1, [1, 1], [0, 0]),
+        new Stabilizer(-1, [0, 0], [1, 1]),
+    ],
+}
+
+export const KNOWN_STATES = [KetZero, KetOne, KetMinus, KetPlus, KetBellPlus, KetBellMinus, KetPsiPlus, KetPsiMinus];
 
 // FIXME: implement like above
 export const UnknownKetState: KetState = {
