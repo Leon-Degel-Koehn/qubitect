@@ -22,7 +22,7 @@ jobs:
         run: npm install
 
       - name: Lint code
-        run: npx eslint .
+        run: npm run lint
 
       - name: Run tests
         run: npm test

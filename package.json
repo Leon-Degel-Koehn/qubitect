@@ -22,6 +22,8 @@
     "typescript-eslint": "^8.28.0"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint .",
+    "format": "eslint . --fix"
   }
 }
