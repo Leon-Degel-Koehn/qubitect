@@ -5,7 +5,7 @@ import { gateLayout } from '../ui/helper.js';
 import { Session } from '../levels/types.js';
 
 const QubitLines = ({ numQubits }: { numQubits: number }): JSX.Element => {
-  let lines = [<spacer height="20px" />];
+  const lines = [<spacer height="20px" />];
   for (let i = 0; i < numQubits; i++) {
     lines.push(<hstack width="100%" height="1px" borderColor='black' />);
     lines.push(<spacer height="40px" />)
@@ -39,10 +39,10 @@ interface GateProps {
 }
 
 const Gates = (props: GateProps): JSX.Element => {
-  let layout = gateLayout(props.session);
-  let mappedLayout = layout.map((col) => col.map((gateEntry) => {
-    let gate: Gate = gateEntry.gate;
-    let idx: number = gateEntry.originalIdx;
+  const layout = gateLayout(props.session);
+  const mappedLayout = layout.map((col) => col.map((gateEntry) => {
+    const gate: Gate = gateEntry.gate;
+    const idx: number = gateEntry.originalIdx;
     if (props.session.level.greyedOutIndices.includes(idx)) {
       return (
         <zstack borderColor='Periwinkle-500' border='thick'>
@@ -125,7 +125,7 @@ class LevelScreenState {
     this.gateReplacements = [];
     this.replaceGate = [];
     for (let i = 0; i < session.level.circuit.gates.length; i++) {
-      let temp = useState(-1);
+      const temp = useState(-1);
       this.gateReplacements.push(temp[0]);
       this.replaceGate.push(temp[1]);
     }

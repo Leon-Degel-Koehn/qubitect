@@ -149,6 +149,7 @@ describe('CircuitSimulation tests', () => {
     test('Measurement of bell state in computational basis', () => {
         const measurementOutcome = Math.random() > 0.5 ? 0 : 1;
         global.Math.random = () => measurementOutcome;
+
         const resultingPhase = measurementOutcome === 0 ? 1 : -1;
         const measurementOperator = new Stabilizer(1, [0, 0], [1, 0]);
         const gates = [new Measurement(measurementOperator)];

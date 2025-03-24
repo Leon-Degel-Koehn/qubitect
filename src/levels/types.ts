@@ -28,7 +28,7 @@ export class Session {
         }
     }
 
-    changeDisplayedGate(locationIdx: number, newGateIdx: number, updateOutput: Function) {
+    changeDisplayedGate(locationIdx: number, newGateIdx: number, updateOutput: (output: number[]) => void) {
         let gate;
         if (newGateIdx >= 0) {
             gate = this.level.availableGates[newGateIdx];
