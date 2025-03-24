@@ -2,14 +2,14 @@ import { Session } from "../levels/types.js";
 import { Gate, Identity } from "../types.js";
 
 type GateLayoutEntry = {
-    originalIdx: number,
-    gate: Gate,
-}
+    originalIdx: number;
+    gate: Gate;
+};
 
 type GateLayout = GateLayoutEntry[][];
 
 export const gateLayout = (session: Session): GateLayout => {
-    let gateMat : GateLayout = [];
+    let gateMat: GateLayout = [];
     gateMat = addColumn(gateMat, session.displayedCircuit.qubits);
     for (let i = 0; i < session.displayedCircuit.gates.length; i++) {
         const currGate = session.displayedCircuit.gates[i];
@@ -27,7 +27,7 @@ export const gateLayout = (session: Session): GateLayout => {
         }
     }
     return gateMat;
-}
+};
 
 const addColumn = (gateMat: GateLayout, qubits: number) => {
     gateMat.push([]);
@@ -36,4 +36,4 @@ const addColumn = (gateMat: GateLayout, qubits: number) => {
         gateMat[lastIdx].push({ originalIdx: -1, gate: new Identity(i) });
     }
     return gateMat;
-}
+};

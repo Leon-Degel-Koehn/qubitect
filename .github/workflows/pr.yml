@@ -3,7 +3,7 @@ name: PR
 on:
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 jobs:
   test:
@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name : Lint code
+      - name: Lint code
         run: npx eslint .
 
       - name: Run tests
