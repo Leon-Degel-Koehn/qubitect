@@ -1,17 +1,17 @@
-import * as math from 'mathjs';
+import * as math from "mathjs";
 // dummy asset in place where an identity operation is performed
 const ID_ASSET = "";
 
 export interface Level {
     // TODO: expand
-    circuit: Circuit,
-    availableGates: Gate[],
-    inputState: Stabilizer[],
-    expectedResult: Stabilizer[],
-    greyedOutIndices: number[],
-    objective?: string, // A text to display to the user to clarify the task
-    title?: string, // The headline title of the puzzle
-    help?: string,
+    circuit: Circuit;
+    availableGates: Gate[];
+    inputState: Stabilizer[];
+    expectedResult: Stabilizer[];
+    greyedOutIndices: number[];
+    objective?: string; // A text to display to the user to clarify the task
+    title?: string; // The headline title of the puzzle
+    help?: string;
 }
 
 export class Circuit {
@@ -53,19 +53,23 @@ export class Stabilizer {
     }
 
     commutes_with(rhs: Stabilizer): boolean {
-        return (this.inner_product(this.x_part, rhs.z_part) ^ this.inner_product(this.z_part, rhs.x_part)) == 0;
+        return (
+            (this.inner_product(this.x_part, rhs.z_part) ^
+                this.inner_product(this.z_part, rhs.x_part)) ==
+            0
+        );
     }
 
     inner_product(lhs: number[], rhs: number[]): number {
-        return lhs.reduce((acc, x, i) => acc ^ x & rhs[i], 0);
+        return lhs.reduce((acc, x, i) => acc ^ (x & rhs[i]), 0);
     }
 
     // assumes target qubits to be the right amount without checking
     onQubits(targetQubits: number[], totalQubits: number): Stabilizer {
-        let x = Array(totalQubits).fill(0);
-        let z = Array(totalQubits).fill(0);
+        const x = Array(totalQubits).fill(0);
+        const z = Array(totalQubits).fill(0);
         let i = 0;
-        for (let idx of targetQubits) {
+        for (const idx of targetQubits) {
             x[idx] = this.x_part[i];
             z[idx] = this.z_part[i];
             i++;
@@ -73,63 +77,54 @@ export class Stabilizer {
         return new Stabilizer(this.phase, x, z);
     }
 
-
     to_string() {
         // TODO
     }
 }
 
 export interface KetState {
-    asset: string,
-    stabilizer: Stabilizer[],
-    helpText?: string,
+    asset: string;
+    stabilizer: Stabilizer[];
+    helpText?: string;
 }
 
 export const KetZero: KetState = {
     asset: "ket_0.png",
-    stabilizer: [
-        new Stabilizer(1, [0], [1]),
-    ],
+    stabilizer: [new Stabilizer(1, [0], [1])],
     helpText: `
         ∣0⟩ – The Ground State
         This is the fundamental basis state of a qubit, representing "zero" in quantum computing. Measuring it always gives 0.
-    `
-}
+    `,
+};
 
 export const KetOne: KetState = {
     asset: "ket_1.png",
-    stabilizer: [
-        new Stabilizer(-1, [0], [1]),
-    ],
+    stabilizer: [new Stabilizer(-1, [0], [1])],
     helpText: `
         ∣1⟩ – The Excited State
         The other basis state (next to ∣1⟩) of a qubit, representing "one." Measuring it always gives 1. You can flip between ∣0⟩ and ∣1⟩ using an X gate.
-    `
-}
+    `,
+};
 
 export const KetPlus: KetState = {
     asset: "ket_plus.png",
-    stabilizer: [
-        new Stabilizer(1, [1], [0]),
-    ],
+    stabilizer: [new Stabilizer(1, [1], [0])],
     helpText: `
         ∣+⟩ – The Plus State
         A superposition state, created by applying a Hadamard gate to ∣0⟩.
         Measuring it gives 0 or 1 with equal probability, one of the superpowers of quantum computing.
-    `
-}
+    `,
+};
 
 export const KetMinus: KetState = {
     asset: "ket_minus.png",
-    stabilizer: [
-        new Stabilizer(-1, [1], [0]),
-    ],
+    stabilizer: [new Stabilizer(-1, [1], [0])],
     helpText: `
         ∣−⟩ – The Minus State
         A superposition state, created by applying a Hadamard gate to ∣1⟩.
         Measuring it gives 0 or 1 with equal probability, but with a relative phase shift that distinguishes it from ∣+⟩.
-    `
-}
+    `,
+};
 
 export const KetBellPlus: KetState = {
     asset: "ket_bell_plus.png",
@@ -143,8 +138,8 @@ export const KetBellPlus: KetState = {
         This also means one qubit's state can never be described independently of the other
         qubit. This correlation of information which we just call entanglement allows for
         phenomena like teleportation to be possible. Much to Einstein's chagrin.
-    `
-}
+    `,
+};
 
 export const KetBellMinus: KetState = {
     asset: "ket_bell_minus.png",
@@ -152,7 +147,7 @@ export const KetBellMinus: KetState = {
         new Stabilizer(-1, [1, 1], [0, 0]),
         new Stabilizer(1, [0, 0], [1, 1]),
     ],
-}
+};
 
 export const KetPsiPlus: KetState = {
     asset: "ket_psi_plus.png",
@@ -160,7 +155,7 @@ export const KetPsiPlus: KetState = {
         new Stabilizer(1, [1, 1], [0, 0]),
         new Stabilizer(-1, [0, 0], [1, 1]),
     ],
-}
+};
 
 export const KetPsiMinus: KetState = {
     asset: "ket_psi_minus.png",
@@ -168,17 +163,24 @@ export const KetPsiMinus: KetState = {
         new Stabilizer(-1, [1, 1], [0, 0]),
         new Stabilizer(-1, [0, 0], [1, 1]),
     ],
-}
+};
 
-export const KNOWN_STATES = [KetZero, KetOne, KetMinus, KetPlus, KetBellPlus, KetBellMinus, KetPsiPlus, KetPsiMinus];
+export const KNOWN_STATES = [
+    KetZero,
+    KetOne,
+    KetMinus,
+    KetPlus,
+    KetBellPlus,
+    KetBellMinus,
+    KetPsiPlus,
+    KetPsiMinus,
+];
 
 // FIXME: implement like above
 export const UnknownKetState: KetState = {
     asset: "ket_unknown.png",
-    stabilizer: [
-        new Stabilizer(1, [0], [0]),
-    ],
-}
+    stabilizer: [new Stabilizer(1, [0], [0])],
+};
 
 // FIXME: Doesn' t work with our new stabilizer def
 function copyStabilizer(original: Stabilizer): Stabilizer {
@@ -189,24 +191,34 @@ export class ActionTable {
     stabilizersWithAction: [Stabilizer, Stabilizer][]; // Pair of stabilizer and action
     affectedQubits: number[];
 
-    constructor(stabilizersWithAction: [Stabilizer, Stabilizer][], affectedQubits: number[]) {
+    constructor(
+        stabilizersWithAction: [Stabilizer, Stabilizer][],
+        affectedQubits: number[],
+    ) {
         this.stabilizersWithAction = stabilizersWithAction;
         this.affectedQubits = affectedQubits;
     }
 
-
     // Return iterator for all matching actions
-    * findAllMatchingActions(stabilizer: Stabilizer): Iterable<Stabilizer> {
+    *findAllMatchingActions(stabilizer: Stabilizer): Iterable<Stabilizer> {
         // Check for all actions that have ones at the same indices as the stabilizer
         for (const [stabilizerToMatch, action] of this.stabilizersWithAction) {
             // Do this by performing a logical AND between the stabilizer and the stabilizer to match
             // Then check if the result is equal to the stabilizer to match
             let matches = true;
             for (let i = 0; i < this.affectedQubits.length; i++) {
-                matches = matches && (stabilizer.x_part[this.affectedQubits[i]] & stabilizerToMatch.x_part[i]) == stabilizerToMatch.x_part[i];
+                matches =
+                    matches &&
+                    (stabilizer.x_part[this.affectedQubits[i]] &
+                        stabilizerToMatch.x_part[i]) ==
+                        stabilizerToMatch.x_part[i];
             }
             for (let i = 0; i < this.affectedQubits.length; i++) {
-                matches = matches && (stabilizer.z_part[this.affectedQubits[i]] & stabilizerToMatch.z_part[i]) == stabilizerToMatch.z_part[i];
+                matches =
+                    matches &&
+                    (stabilizer.z_part[this.affectedQubits[i]] &
+                        stabilizerToMatch.z_part[i]) ==
+                        stabilizerToMatch.z_part[i];
             }
             if (matches) {
                 yield action;
@@ -216,8 +228,8 @@ export class ActionTable {
 
     applyAction(stabilizer: Stabilizer, action: Stabilizer): Stabilizer {
         // Apply the action to the stabilizer
-        let x_part = [...stabilizer.x_part];
-        let z_part = [...stabilizer.z_part];
+        const x_part = [...stabilizer.x_part];
+        const z_part = [...stabilizer.z_part];
         for (let i = 0; i < this.affectedQubits.length; i++) {
             x_part[this.affectedQubits[i]] = action.x_part[i];
         }
@@ -240,9 +252,13 @@ export class Gate {
     actionTable: ActionTable;
     helpText: string;
 
-
     // Default constructor to be used by child classes
-    constructor(affectedQubits: number[], assets: string[], actionTable: ActionTable, helpText = "") {
+    constructor(
+        affectedQubits: number[],
+        assets: string[],
+        actionTable: ActionTable,
+        helpText = "",
+    ) {
         this.affectedQubits = affectedQubits;
         this.assets = assets;
         this.actionTable = actionTable;
@@ -253,15 +269,28 @@ export class Gate {
     // if the gate is to define a measurement.
     simulate(input: Stabilizer[]): Stabilizer[] {
         // Iterate over all stabilizers and apply the action of the gate
-        let result = []
+        const result = [];
         for (const stabilizer of input) {
-            const actions = [...this.actionTable.findAllMatchingActions(stabilizer)];
+            const actions = [
+                ...this.actionTable.findAllMatchingActions(stabilizer),
+            ];
             if (actions.length > 0) {
-                let resultingStabilizer = new Stabilizer(1, Array(this.affectedQubits.length).fill(0), Array(this.affectedQubits.length).fill(0));
-                for (const action of this.actionTable.findAllMatchingActions(stabilizer)) {
+                let resultingStabilizer = new Stabilizer(
+                    1,
+                    Array(this.affectedQubits.length).fill(0),
+                    Array(this.affectedQubits.length).fill(0),
+                );
+                for (const action of this.actionTable.findAllMatchingActions(
+                    stabilizer,
+                )) {
                     resultingStabilizer = resultingStabilizer.add(action);
                 }
-                result.push(this.actionTable.applyAction(stabilizer, resultingStabilizer));
+                result.push(
+                    this.actionTable.applyAction(
+                        stabilizer,
+                        resultingStabilizer,
+                    ),
+                );
             } else {
                 result.push(stabilizer);
             }
@@ -284,43 +313,55 @@ export class PlaceholderGate extends Gate {
 
 export class PauliX extends Gate {
     constructor(targetQubit: number) {
-        let affectedQubits = [targetQubit];
-        let assets = ["pauli_x.png"];
-        let actionTable = new ActionTable([
-            [new Stabilizer(1, [0], [1]), new Stabilizer(-1, [0], [1])]], affectedQubits);
+        const affectedQubits = [targetQubit];
+        const assets = ["pauli_x.png"];
+        const actionTable = new ActionTable(
+            [[new Stabilizer(1, [0], [1]), new Stabilizer(-1, [0], [1])]],
+            affectedQubits,
+        );
         super(affectedQubits, assets, actionTable);
     }
 }
 
 export class PauliZ extends Gate {
     constructor(targetQubit: number) {
-        let affectedQubits = [targetQubit];
-        let assets = ["pauli_z.png"];
-        let actionTable = new ActionTable([
-            [new Stabilizer(1, [1], [0]), new Stabilizer(-1, [1], [0])]], affectedQubits);
+        const affectedQubits = [targetQubit];
+        const assets = ["pauli_z.png"];
+        const actionTable = new ActionTable(
+            [[new Stabilizer(1, [1], [0]), new Stabilizer(-1, [1], [0])]],
+            affectedQubits,
+        );
         super(affectedQubits, assets, actionTable);
     }
 }
 
 export class PauliY extends Gate {
     constructor(targetQubit: number) {
-        let affectedQubits = [targetQubit];
-        let assets = ["pauli_y.png"];
-        let actionTable = new ActionTable([
-            [new Stabilizer(1, [0], [1]), new Stabilizer(-1, [0], [1])],
-            [new Stabilizer(1, [1], [0]), new Stabilizer(-1, [1], [0])]], affectedQubits);
+        const affectedQubits = [targetQubit];
+        const assets = ["pauli_y.png"];
+        const actionTable = new ActionTable(
+            [
+                [new Stabilizer(1, [0], [1]), new Stabilizer(-1, [0], [1])],
+                [new Stabilizer(1, [1], [0]), new Stabilizer(-1, [1], [0])],
+            ],
+            affectedQubits,
+        );
         super(affectedQubits, assets, actionTable);
     }
 }
 
 export class Hadamard extends Gate {
     constructor(targetQubit: number) {
-        let affectedQubits = [targetQubit];
-        let assets = ["hadamard.png"];
-        let actionTable = new ActionTable([
-            [new Stabilizer(1, [0], [1]), new Stabilizer(1, [1], [0])],
-            [new Stabilizer(1, [1], [0]), new Stabilizer(1, [0], [1])]], affectedQubits);
-        let helpText = `
+        const affectedQubits = [targetQubit];
+        const assets = ["hadamard.png"];
+        const actionTable = new ActionTable(
+            [
+                [new Stabilizer(1, [0], [1]), new Stabilizer(1, [1], [0])],
+                [new Stabilizer(1, [1], [0]), new Stabilizer(1, [0], [1])],
+            ],
+            affectedQubits,
+        );
+        const helpText = `
             The Hadamard Gate
             At a basic level it puts a state into/out of superposition.
             For example a |0> state that is initially no more powerful than a classical 0 bit
@@ -328,35 +369,65 @@ export class Hadamard extends Gate {
             probabilities of being observed as a 0 or 1 when measured. Much like Schrodinger's cat.
             Note that this gate is self-adjoint (and unitary as all gates except measurements) which
             means that subsequent applications cancel out, i.e. H(H(|x>)) = |x>.
-        `
+        `;
         super(affectedQubits, assets, actionTable, helpText);
     }
 }
 
 export class ControlledPauliX extends Gate {
     constructor(controlQubit: number, targetQubit: number) {
-        let affectedQubits = [controlQubit, targetQubit];
-        let assets = ["cnot_0.png", "cnot_1.png"];
-        let actionTable = new ActionTable([
-            [new Stabilizer(1, [1, 0], [0, 0]), new Stabilizer(1, [1, 1], [0, 0])],
-            [new Stabilizer(1, [0, 1], [0, 0]), new Stabilizer(1, [0, 1], [0, 0])],
-            [new Stabilizer(1, [0, 0], [1, 0]), new Stabilizer(1, [0, 0], [1, 0])],
-            [new Stabilizer(1, [0, 0], [0, 1]), new Stabilizer(1, [0, 0], [1, 1])]
-        ], affectedQubits);
+        const affectedQubits = [controlQubit, targetQubit];
+        const assets = ["cnot_0.png", "cnot_1.png"];
+        const actionTable = new ActionTable(
+            [
+                [
+                    new Stabilizer(1, [1, 0], [0, 0]),
+                    new Stabilizer(1, [1, 1], [0, 0]),
+                ],
+                [
+                    new Stabilizer(1, [0, 1], [0, 0]),
+                    new Stabilizer(1, [0, 1], [0, 0]),
+                ],
+                [
+                    new Stabilizer(1, [0, 0], [1, 0]),
+                    new Stabilizer(1, [0, 0], [1, 0]),
+                ],
+                [
+                    new Stabilizer(1, [0, 0], [0, 1]),
+                    new Stabilizer(1, [0, 0], [1, 1]),
+                ],
+            ],
+            affectedQubits,
+        );
         super(affectedQubits, assets, actionTable);
     }
 }
 
 export class ControlledPauliZ extends Gate {
     constructor(controlQubit: number, targetQubit: number) {
-        let affectedQubits = [controlQubit, targetQubit];
-        let assets = ["cz_0.png", "cz_1.png"];
-        let actionTable = new ActionTable([
-            [new Stabilizer(1, [1, 0], [0, 0]), new Stabilizer(1, [1, 0], [0, 1])],
-            [new Stabilizer(1, [0, 0], [1, 0]), new Stabilizer(1, [0, 0], [1, 0])],
-            [new Stabilizer(1, [0, 1], [0, 0]), new Stabilizer(1, [0, 1], [1, 0])],
-            [new Stabilizer(1, [0, 0], [0, 1]), new Stabilizer(1, [0, 0], [0, 1])]
-        ], affectedQubits);
+        const affectedQubits = [controlQubit, targetQubit];
+        const assets = ["cz_0.png", "cz_1.png"];
+        const actionTable = new ActionTable(
+            [
+                [
+                    new Stabilizer(1, [1, 0], [0, 0]),
+                    new Stabilizer(1, [1, 0], [0, 1]),
+                ],
+                [
+                    new Stabilizer(1, [0, 0], [1, 0]),
+                    new Stabilizer(1, [0, 0], [1, 0]),
+                ],
+                [
+                    new Stabilizer(1, [0, 1], [0, 0]),
+                    new Stabilizer(1, [0, 1], [1, 0]),
+                ],
+                [
+                    new Stabilizer(1, [0, 0], [0, 1]),
+                    new Stabilizer(1, [0, 0], [0, 1]),
+                ],
+            ],
+            affectedQubits,
+        );
         super(affectedQubits, assets, actionTable);
     }
 }
@@ -364,9 +435,16 @@ export class ControlledPauliZ extends Gate {
 export class Measurement extends Gate {
     measurementOperator: Stabilizer;
 
-    constructor(measurementOperator: Stabilizer, affectedQubits: number[] = []) {
+    constructor(
+        measurementOperator: Stabilizer,
+        affectedQubits: number[] = [],
+    ) {
         // TODO: Affected qubits can be derived from the stabilizer
-        super(affectedQubits, ["standard_measure.png"], new ActionTable([], []));
+        super(
+            affectedQubits,
+            ["standard_measure.png"],
+            new ActionTable([], []),
+        );
         this.affectedQubits = affectedQubits;
         this.measurementOperator = measurementOperator;
     }
@@ -376,18 +454,26 @@ export class Measurement extends Gate {
         if (isInStabilizerSubspace(this.measurementOperator, input)) {
             // Calculate measurement outcome by checking if +P (=0) is in the stabilizer subspace or -P(=1)
             // TODO: Move this to a dedicated function
-            let basisMatrix = input.map(stabilizer => stabilizer.x_part.concat(stabilizer.z_part));
+            const basisMatrix = input.map((stabilizer) =>
+                stabilizer.x_part.concat(stabilizer.z_part),
+            );
             const A = math.transpose(math.matrix(basisMatrix));
             const A_pinv = math.pinv(A);
-            const measurementOperatorVector = this.measurementOperator.x_part.concat(this.measurementOperator.z_part);
+            const measurementOperatorVector =
+                this.measurementOperator.x_part.concat(
+                    this.measurementOperator.z_part,
+                );
             const b = math.matrix(measurementOperatorVector);
-            const solution = math.multiply(A_pinv, b).toArray().map(x => Number(x));
+            const solution = math
+                .multiply(A_pinv, b)
+                .toArray()
+                .map((x) => Number(x));
             // Check if b equals A * x
             if (math.norm(math.subtract(b, math.multiply(A, solution))) == 0) {
                 // Measurement operator is in the stabilizer subspace => Post-measurement stabilizer is not changed
                 // However, we need to find out the measurement result by checking the phase
                 // 1. Take absolute value of solution vector
-                const absSolution = solution.map(x => Math.abs(x));
+                const absSolution = solution.map((x) => Math.abs(x));
                 // 2. Find resulting phase
                 let phase = 1;
                 for (let i = 0; i < absSolution.length; i++) {
@@ -404,13 +490,18 @@ export class Measurement extends Gate {
             console.log("Measurement result: ", result);
             // 2. Find generator that anti-commutes with measurement operator
             const postMeasurementStabilizers = [];
-            const antiCommutesIndex = input.findIndex(stabilizer => !this.measurementOperator.commutes_with(stabilizer));
+            const antiCommutesIndex = input.findIndex(
+                (stabilizer) =>
+                    !this.measurementOperator.commutes_with(stabilizer),
+            );
             // 3. Replace all other anti-commuting generators with product of measurement operator and anti-commuting generator
             for (let i = 0; i < input.length; i++) {
                 if (i != antiCommutesIndex) {
                     // If they anti-commute, add the product of the two to the stabilizers
                     if (!this.measurementOperator.commutes_with(input[i])) {
-                        postMeasurementStabilizers.push(input[i].add(input[antiCommutesIndex]));
+                        postMeasurementStabilizers.push(
+                            input[i].add(input[antiCommutesIndex]),
+                        );
                     } else {
                         postMeasurementStabilizers.push(input[i]);
                     }
@@ -424,6 +515,9 @@ export class Measurement extends Gate {
     }
 }
 
-export function isInStabilizerSubspace(stabilizer: Stabilizer, generators: Stabilizer[]): boolean {
-    return generators.every(generator => generator.commutes_with(stabilizer));
+export function isInStabilizerSubspace(
+    stabilizer: Stabilizer,
+    generators: Stabilizer[],
+): boolean {
+    return generators.every((generator) => generator.commutes_with(stabilizer));
 }
