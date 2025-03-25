@@ -69,6 +69,7 @@ const Gates = ({ props, layout }: { props: GateProps, layout: GateLayout }): JSX
           </zstack>
         )
       }
+      console.log(gate, "is identity");
       return (
         <spacer height="40px" />
       )
@@ -156,7 +157,7 @@ const OutputStates = (props: GateProps): JSX.Element => {
   return props.state.outputStates.map((ketStateIdx, qubit) => {
     const ketState = ketStateIdx >= 0 ? KNOWN_STATES[ketStateIdx] : UnknownKetState;
     return (
-      <zstack borderColor={ketStateIdx == props.session.optimalOutput[qubit] ? 'success-plain' : 'danger-plain'} border='thick'>
+      <zstack backgroundColor='white' borderColor={ketStateIdx == props.session.optimalOutput[qubit] ? 'success-plain' : 'danger-plain'} border='thick'>
         <image
           url={ketState.asset}
           imageHeight={`${ketState.stabilizer[0].x_part.length * 40}px`}
@@ -171,7 +172,7 @@ interface LevelScreenProps {
   session: Session;
 }
 
-class LevelScreenState {
+export class LevelScreenState {
 
   // Global state variables
   selectedGate: number; // index in the level's available gates
@@ -196,6 +197,12 @@ class LevelScreenState {
       this.replaceGate.push(temp[1]);
     }
   }
+
+  reset(session: Session) {
+    this.selectGate(-1);
+    const initialOutput = stateFromStabilizer(session.displayedCircuit.simulate(session.level.inputState)).map((ketState) => KNOWN_STATES.indexOf(ketState));
+    this.updateOutputStates(initialOutput);
+  }
 }
 
 export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
@@ -204,7 +211,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
   const ketInputStates = stateFromStabilizer(props.session.level.inputState);
   const layout = gateLayout(props.session);
   return (
-    <vstack alignment='center middle' height='100%' gap='large' padding='medium' backgroundColor='white'>
+    <vstack alignment='center middle' width='100%' height='100%' gap='large' padding='medium' backgroundColor='white'>
       {props.session.level.title ? (<text style='heading' color='global-black'>{props.session.level.title}</text>) : (<spacer grow shape='invisible' />)}
       <zstack width="100%">
         <QubitLines numQubits={numQubits} />

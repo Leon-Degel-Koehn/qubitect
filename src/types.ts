@@ -11,6 +11,7 @@ export interface Level {
     greyedOutIndices: number[],
     objective?: string, // A text to display to the user to clarify the task
     title?: string, // The headline title of the puzzle
+    help?: string,
 }
 
 export class Circuit {
@@ -326,10 +327,10 @@ export class ControlledPauliZ extends Gate {
 export class Measurement extends Gate {
     measurementOperator: Stabilizer;
 
-    constructor(measurementOperator: Stabilizer) {
+    constructor(measurementOperator: Stabilizer, affectedQubits: number[] = []) {
         // TODO: Affected qubits can be derived from the stabilizer
-        super([], ["standard_measure.png"], new ActionTable([], []));
-        this.affectedQubits = [];
+        super(affectedQubits, ["standard_measure.png"], new ActionTable([], []));
+        this.affectedQubits = affectedQubits;
         this.measurementOperator = measurementOperator;
     }
 
