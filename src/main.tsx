@@ -1,9 +1,7 @@
 import { Devvit, useState } from "@devvit/public-api";
-import { LevelScreen, LevelScreenState } from "./components/level_screen.js";
+import { LevelScreen } from "./components/level_screen.js";
 import { Session } from "./levels/types.js";
 import { EPR } from "./levels/cnot_test.js";
-import { Measurement } from "./types.js";
-import { MeasurementTest } from "./levels/measurement.js";
 import { TestLevel } from "./levels/simplest.js";
 import { HelpScreen } from "./components/help_screen.js";
 
@@ -38,7 +36,7 @@ Devvit.addMenuItem({
     },
 });
 
-const LEVELS = [TestLevel, MeasurementTest, EPR];
+const LEVELS = [TestLevel, EPR];
 
 Devvit.addCustomPostType({
     name: "Qubitect",
