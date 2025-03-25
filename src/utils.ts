@@ -12,7 +12,7 @@ import {
 } from "./types.js";
 import * as math from "mathjs";
 
-const isInStabilizerSet = (
+export const isInStabilizerSet = (
     generator: Stabilizer,
     stabilizerSet: Stabilizer[],
 ): boolean => {
