@@ -37,11 +37,11 @@ Devvit.addMenuItem({
 
 Devvit.addSchedulerJob({
     name: "Daily Qubitect puzzle post",
-    onRun: async (event, context) => {
+    onRun: async (_, context) => {
         const { reddit } = context;
         const subreddit = await reddit.getCurrentSubreddit();
-        await reddit.submitPost({
-            title: "Test qubitect post",
+        const post = await reddit.submitPost({
+            title: "Daily qubitect post",
             subredditName: subreddit.name,
             // The preview appears while the post loads
             preview: (
@@ -50,37 +50,63 @@ Devvit.addSchedulerJob({
                 </vstack>
             ),
         });
+        // Initialize level id in redis
+        let levelId = parseInt(
+            await context.redis
+                .get("currentLevelId")
+                .then((value) => value ?? "0"),
+        );
+        if (levelId >= LEVELS.length) {
+            levelId = 0;
+            await context.redis.set("currentLevelId", "0");
+        }
+        await context.redis.set("currentLevelId", `${levelId + 1}`);
+        await context.redis.set(post.id, levelId.toString());
+    },
+});
+
+Devvit.addMenuItem({
+    label: "Remove daily post",
+    location: "subreddit",
+    forUserType: "moderator",
+    onPress: async (_, context) => {
+        const jobs = await context.scheduler.listJobs();
+        jobs.forEach((job) => {
+            context.scheduler.cancelJob(job.id);
+        });
     },
 });
 
 Devvit.addMenuItem({
     label: "Add daily Qubitect puzzle post",
-    location: "post",
-    onPress: async (event, context) => {
-        // Initialize level id in redis
-        const hasLevelId = await context.redis.exists("currentLevelId");
-        if (!hasLevelId) {
-            await context.redis.set("currentLevelId", "0");
-        }
-        const jobId = await context.scheduler.runJob({
+    location: "subreddit",
+    onPress: async (_, context) => {
+        const jobs = await context.scheduler.listJobs();
+        if (jobs.length > 0) return;
+        await context.scheduler.runJob({
             name: "Daily Qubitect puzzle post",
             cron: "*/2 * * * *",
         });
+        console.log("Added daily posting job");
     },
 });
 
-const App: Devvit.CustomPostComponent = async ({ redis }) => {
+const App: Devvit.CustomPostComponent = (context) => {
     // Fetch current level id from redis
-    const levelId =
-        parseInt(
-            await redis.get("currentLevelId").then((value) => value ?? "0"),
-        ) + 1;
-    // Update current level id in redis
-    await redis.set("currentLevelId", levelId.toString());
+    const [levelId, setLevelId] = useState(async () => {
+        let postId = "";
+        if (context.postId !== undefined) {
+            postId = context.postId;
+        }
+        return parseInt(
+            await context.redis.get(postId).then((value) => value ?? "0"),
+        );
+    });
+    console.log(levelId);
     if (levelId >= LEVELS.length) {
         return <text>No more levels</text>;
     }
-  const [displayHelp, changeDisplayHelp] = useState(false);
+    const [displayHelp, changeDisplayHelp] = useState(false);
     const session = new Session(LEVELS[levelId]);
     return (
         <zstack height={100} width={100}>
