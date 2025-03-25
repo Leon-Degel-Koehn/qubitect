@@ -1,7 +1,9 @@
-import { Devvit } from "@devvit/public-api";
+import { Devvit, useState } from "@devvit/public-api";
 import { LevelScreen } from "./components/level_screen.js";
-import { TestLevel } from "./levels/simplest.js";
 import { Session } from "./levels/types.js";
+import { EPR } from "./levels/cnot_test.js";
+import { TestLevel } from "./levels/simplest.js";
+import { HelpScreen } from "./components/help_screen.js";
 
 Devvit.configure({
     redis: true,
@@ -34,14 +36,31 @@ Devvit.addMenuItem({
     },
 });
 
+const LEVELS = [TestLevel, EPR];
+
 Devvit.addCustomPostType({
     name: "Qubitect",
     height: "tall",
     description: "Bite-sized quantum computing puzzles",
     render: () => {
+        const [displayHelp, changeDisplayHelp] = useState(false);
+        const session = new Session(EPR);
         return (
-            //TODO: implement other screens etc.
-            <LevelScreen session={new Session(TestLevel)} />
+            <zstack height={100} width={100}>
+                {displayHelp ? (
+                    <HelpScreen session={session} />
+                ) : (
+                    <LevelScreen session={session} />
+                )}
+                <hstack alignment="end" width={100}>
+                    <button
+                        icon={displayHelp ? "wiki-ban" : "wiki"}
+                        onPress={() => {
+                            changeDisplayHelp(!displayHelp);
+                        }}
+                    />
+                </hstack>
+            </zstack>
         );
     },
 });

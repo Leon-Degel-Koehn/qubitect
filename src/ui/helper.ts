@@ -4,9 +4,10 @@ import { Gate, Identity } from "../types.js";
 type GateLayoutEntry = {
     originalIdx: number;
     gate: Gate;
+    idxInAffectedQubits: number;
 };
 
-type GateLayout = GateLayoutEntry[][];
+export type GateLayout = GateLayoutEntry[][];
 
 export const gateLayout = (session: Session): GateLayout => {
     let gateMat: GateLayout = [];
@@ -21,10 +22,11 @@ export const gateLayout = (session: Session): GateLayout => {
         }
         lastCol = gateMat[gateMat.length - 1];
         const gateToInsert = session.displayedCircuit.gates[i];
-        for (const targetQubit of gateToInsert.affectedQubits) {
+        gateToInsert.affectedQubits.forEach((targetQubit, idx) => {
             lastCol[targetQubit].gate = gateToInsert;
             lastCol[targetQubit].originalIdx = i;
-        }
+            lastCol[targetQubit].idxInAffectedQubits = idx;
+        });
     }
     return gateMat;
 };
@@ -33,7 +35,11 @@ const addColumn = (gateMat: GateLayout, qubits: number) => {
     gateMat.push([]);
     const lastIdx = gateMat.length - 1;
     for (let i = 0; i < qubits; i++) {
-        gateMat[lastIdx].push({ originalIdx: -1, gate: new Identity(i) });
+        gateMat[lastIdx].push({
+            originalIdx: -1,
+            gate: new Identity(i),
+            idxInAffectedQubits: 0,
+        });
     }
     return gateMat;
 };

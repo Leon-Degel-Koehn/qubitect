@@ -11,6 +11,7 @@ export interface Level {
     greyedOutIndices: number[];
     objective?: string; // A text to display to the user to clarify the task
     title?: string; // The headline title of the puzzle
+    help?: string;
 }
 
 export class Circuit {
@@ -84,40 +85,102 @@ export class Stabilizer {
 export interface KetState {
     asset: string;
     stabilizer: Stabilizer[];
+    helpText?: string;
 }
 
 export const KetZero: KetState = {
     asset: "ket_0.png",
     stabilizer: [new Stabilizer(1, [0], [1])],
+    helpText: `
+        ∣0⟩ – The Ground State
+        This is the fundamental basis state of a qubit, representing "zero" in quantum computing. Measuring it always gives 0.
+    `,
 };
 
 export const KetOne: KetState = {
     asset: "ket_1.png",
     stabilizer: [new Stabilizer(-1, [0], [1])],
+    helpText: `
+        ∣1⟩ – The Excited State
+        The other basis state (next to ∣1⟩) of a qubit, representing "one." Measuring it always gives 1. You can flip between ∣0⟩ and ∣1⟩ using an X gate.
+    `,
 };
 
 export const KetPlus: KetState = {
     asset: "ket_plus.png",
     stabilizer: [new Stabilizer(1, [1], [0])],
+    helpText: `
+        ∣+⟩ – The Plus State
+        A superposition state, created by applying a Hadamard gate to ∣0⟩.
+        Measuring it gives 0 or 1 with equal probability, one of the superpowers of quantum computing.
+    `,
 };
 
 export const KetMinus: KetState = {
     asset: "ket_minus.png",
     stabilizer: [new Stabilizer(-1, [1], [0])],
+    helpText: `
+        ∣−⟩ – The Minus State
+        A superposition state, created by applying a Hadamard gate to ∣1⟩.
+        Measuring it gives 0 or 1 with equal probability, but with a relative phase shift that distinguishes it from ∣+⟩.
+    `,
 };
 
-export const KNOWN_STATES = [KetZero, KetOne, KetMinus, KetPlus];
+export const KetBellPlus: KetState = {
+    asset: "ket_bell_plus.png",
+    stabilizer: [
+        new Stabilizer(1, [1, 1], [0, 0]),
+        new Stabilizer(1, [0, 0], [1, 1]),
+    ],
+    helpText: `
+        ∣Φ+⟩ - The Bell Plus State
+        A maximally entangled state where both qubits are always the same upon measurement.
+        This also means one qubit's state can never be described independently of the other
+        qubit. This correlation of information which we just call entanglement allows for
+        phenomena like teleportation to be possible. Much to Einstein's chagrin.
+    `,
+};
+
+export const KetBellMinus: KetState = {
+    asset: "ket_bell_minus.png",
+    stabilizer: [
+        new Stabilizer(-1, [1, 1], [0, 0]),
+        new Stabilizer(1, [0, 0], [1, 1]),
+    ],
+};
+
+export const KetPsiPlus: KetState = {
+    asset: "ket_psi_plus.png",
+    stabilizer: [
+        new Stabilizer(1, [1, 1], [0, 0]),
+        new Stabilizer(-1, [0, 0], [1, 1]),
+    ],
+};
+
+export const KetPsiMinus: KetState = {
+    asset: "ket_psi_minus.png",
+    stabilizer: [
+        new Stabilizer(-1, [1, 1], [0, 0]),
+        new Stabilizer(-1, [0, 0], [1, 1]),
+    ],
+};
+
+export const KNOWN_STATES = [
+    KetZero,
+    KetOne,
+    KetMinus,
+    KetPlus,
+    KetBellPlus,
+    KetBellMinus,
+    KetPsiPlus,
+    KetPsiMinus,
+];
 
 // FIXME: implement like above
-export class UnknownKetState implements KetState {
-    asset: string;
-    stabilizer: Stabilizer[];
-
-    constructor() {
-        this.asset = "ket_unknown.png";
-        this.stabilizer = [new Stabilizer(1, [0], [0])];
-    }
-}
+export const UnknownKetState: KetState = {
+    asset: "ket_unknown.png",
+    stabilizer: [new Stabilizer(1, [0], [0])],
+};
 
 // FIXME: Doesn' t work with our new stabilizer def
 function copyStabilizer(original: Stabilizer): Stabilizer {
@@ -187,16 +250,19 @@ export class Gate {
     affectedQubits: number[];
     assets: string[];
     actionTable: ActionTable;
+    helpText: string;
 
     // Default constructor to be used by child classes
     constructor(
         affectedQubits: number[],
         assets: string[],
         actionTable: ActionTable,
+        helpText = "",
     ) {
         this.affectedQubits = affectedQubits;
         this.assets = assets;
         this.actionTable = actionTable;
+        this.helpText = helpText;
     }
 
     // Function that maps from stabilizers to stabilizers, with an optional measurement result
@@ -295,14 +361,23 @@ export class Hadamard extends Gate {
             ],
             affectedQubits,
         );
-        super(affectedQubits, assets, actionTable);
+        const helpText = `
+            The Hadamard Gate
+            At a basic level it puts a state into/out of superposition.
+            For example a |0> state that is initially no more powerful than a classical 0 bit
+            is transformed to a |+> state which is a state in superposition that has equal
+            probabilities of being observed as a 0 or 1 when measured. Much like Schrodinger's cat.
+            Note that this gate is self-adjoint (and unitary as all gates except measurements) which
+            means that subsequent applications cancel out, i.e. H(H(|x>)) = |x>.
+        `;
+        super(affectedQubits, assets, actionTable, helpText);
     }
 }
 
 export class ControlledPauliX extends Gate {
     constructor(controlQubit: number, targetQubit: number) {
         const affectedQubits = [controlQubit, targetQubit];
-        const assets = ["cnot_control.png", "cnot_target.png"];
+        const assets = ["cnot_0.png", "cnot_1.png"];
         const actionTable = new ActionTable(
             [
                 [
@@ -331,7 +406,7 @@ export class ControlledPauliX extends Gate {
 export class ControlledPauliZ extends Gate {
     constructor(controlQubit: number, targetQubit: number) {
         const affectedQubits = [controlQubit, targetQubit];
-        const assets = ["cz_control.png", "cz_target.png"];
+        const assets = ["cz_0.png", "cz_1.png"];
         const actionTable = new ActionTable(
             [
                 [
@@ -360,10 +435,17 @@ export class ControlledPauliZ extends Gate {
 export class Measurement extends Gate {
     measurementOperator: Stabilizer;
 
-    constructor(measurementOperator: Stabilizer) {
+    constructor(
+        measurementOperator: Stabilizer,
+        affectedQubits: number[] = [],
+    ) {
         // TODO: Affected qubits can be derived from the stabilizer
-        super([], ["standard_measure.png"], new ActionTable([], []));
-        this.affectedQubits = [];
+        super(
+            affectedQubits,
+            ["standard_measure.png"],
+            new ActionTable([], []),
+        );
+        this.affectedQubits = affectedQubits;
         this.measurementOperator = measurementOperator;
     }
 
