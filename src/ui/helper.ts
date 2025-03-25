@@ -10,7 +10,7 @@ type GateLayoutEntry = {
 export type GateLayout = GateLayoutEntry[][];
 
 export const gateLayout = (session: Session): GateLayout => {
-    let gateMat = [];
+    let gateMat: GateLayout = [];
     gateMat = addColumn(gateMat, session.displayedCircuit.qubits);
     for (let i = 0; i < session.displayedCircuit.gates.length; i++) {
         const currGate = session.displayedCircuit.gates[i];
