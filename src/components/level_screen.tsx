@@ -4,6 +4,7 @@ import { stateFromStabilizer } from '../utils.js';
 import { GateLayout, gateLayout } from '../ui/helper.js';
 import { Session } from '../levels/types.js';
 import { Direction, Line } from './line.js';
+import { InfoPopup } from './InfoPopup.js';
 
 const QubitLines = ({ numQubits }: { numQubits: number }): JSX.Element => {
   let lines = [<spacer height="20px" />];
@@ -28,7 +29,13 @@ const GateSelectionMenu = (props: GateProps): JSX.Element => {
         url={gate.assets[0]}
         imageHeight={props.state.selectedGate >= 0 ? idx == props.state.selectedGate ? 50 : 30 : 40}
         imageWidth={props.state.selectedGate >= 0 ? idx == props.state.selectedGate ? 50 : 30 : 40}
-        onPress={() => { props.state.selectGate(idx) }}
+        onPress={() => {
+          if (props.state.selectedGate === idx) {
+            props.state.setPopupText(gate.helpText);
+          } else {
+            props.state.selectGate(idx);
+          }
+        }}
       />
     ))}
   </hstack>)
@@ -162,6 +169,9 @@ const OutputStates = (props: GateProps): JSX.Element => {
           url={ketState.asset}
           imageHeight={`${ketState.stabilizer[0].x_part.length * 40}px`}
           imageWidth="40px"
+          onPress={() => {
+            props.state.setPopupText(ketState.helpText || "");
+          }}
         />
       </zstack>
     )
@@ -178,14 +188,17 @@ export class LevelScreenState {
   selectedGate: number; // index in the level's available gates
   gateReplacements: number[]; // indices in the level's available gates
   outputStates: number[]; // indices in the global KNOWN_STATES
+  popupText: string;
 
   // Global setters of state variables
   replaceGate: StateSetter<number>[];
   selectGate: StateSetter<number>;
   updateOutputStates: StateSetter<Array<number>>;
+  setPopupText: StateSetter<string>;
 
   constructor(session: Session) {
     [this.selectedGate, this.selectGate] = useState(-1);
+    [this.popupText, this.setPopupText] = useState("");
     const initialOutput = stateFromStabilizer(session.displayedCircuit.simulate(session.level.inputState))
       .map((ketState) => KNOWN_STATES.indexOf(ketState));
     [this.outputStates, this.updateOutputStates] = useState(initialOutput);
@@ -197,12 +210,6 @@ export class LevelScreenState {
       this.replaceGate.push(temp[1]);
     }
   }
-
-  reset(session: Session) {
-    this.selectGate(-1);
-    const initialOutput = stateFromStabilizer(session.displayedCircuit.simulate(session.level.inputState)).map((ketState) => KNOWN_STATES.indexOf(ketState));
-    this.updateOutputStates(initialOutput);
-  }
 }
 
 export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
@@ -211,31 +218,41 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
   const ketInputStates = stateFromStabilizer(props.session.level.inputState);
   const layout = gateLayout(props.session);
   return (
-    <vstack alignment='center middle' width='100%' height='100%' gap='large' padding='medium' backgroundColor='white'>
-      {props.session.level.title ? (<text style='heading' color='global-black'>{props.session.level.title}</text>) : (<spacer grow shape='invisible' />)}
-      <zstack width="100%">
-        <QubitLines numQubits={numQubits} />
-        <hstack width="100%">
-          <vstack>
-            {ketInputStates.map((ketState) => (
-              <image
-                url={ketState.asset}
-                imageHeight={`${ketState.stabilizer[0].x_part.length * 40}px`}
-                imageWidth="40px"
-              />
-            ))}
-          </vstack>
-          <Gates props={{ session: props.session, state: state }} layout={layout} />
-          <spacer grow shape='invisible' />
-          <vstack>
-            <OutputStates session={props.session} state={state} />
-          </vstack>
-        </hstack>
-      </zstack>
-      <vstack grow alignment='center middle'>
-        <text>{props.session.level.objective || ''}</text>
+    <zstack alignment='center' width='100%' height='100%' gap='large' padding='medium' backgroundColor='white'> {/* To allow for popups */}
+      <vstack alignment='center middle' width='100%' height='100%' gap='large' padding='medium' backgroundColor='white'>
+        {props.session.level.title ? (<text style='heading' color='global-black'>{props.session.level.title}</text>) : (<spacer grow shape='invisible' />)}
+        <zstack width="100%">
+          <QubitLines numQubits={numQubits} />
+          <hstack width="100%">
+            <vstack>
+              {ketInputStates.map((ketState) => (
+                <image
+                  url={ketState.asset}
+                  imageHeight={`${ketState.stabilizer[0].x_part.length * 40}px`}
+                  imageWidth="40px"
+                  onPress={() => {
+                    state.setPopupText(ketState.helpText || "");
+                  }}
+                />
+              ))}
+            </vstack>
+            <Gates props={{ session: props.session, state: state }} layout={layout} />
+            <spacer grow shape='invisible' />
+            <vstack>
+              <OutputStates session={props.session} state={state} />
+            </vstack>
+          </hstack>
+        </zstack>
+        <vstack grow alignment='center middle'>
+          <text>{props.session.level.objective || ''}</text>
+        </vstack>
+        <GateSelectionMenu session={props.session} state={state} />
       </vstack>
-      <GateSelectionMenu session={props.session} state={state} />
-    </vstack>
+      <InfoPopup
+        visible={!!state.popupText}
+        setVisible={(val: boolean) => { state.setPopupText(val ? state.popupText : "") }}
+        text={state.popupText}
+      />
+    </zstack>
   )
 }

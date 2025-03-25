@@ -82,6 +82,7 @@ export class Stabilizer {
 export interface KetState {
     asset: string,
     stabilizer: Stabilizer[],
+    helpText?: string,
 }
 
 export const KetZero: KetState = {
@@ -89,6 +90,10 @@ export const KetZero: KetState = {
     stabilizer: [
         new Stabilizer(1, [0], [1]),
     ],
+    helpText: `
+        ∣0⟩ – The Ground State
+        This is the fundamental basis state of a qubit, representing "zero" in quantum computing. Measuring it always gives 0.
+    `
 }
 
 export const KetOne: KetState = {
@@ -96,6 +101,10 @@ export const KetOne: KetState = {
     stabilizer: [
         new Stabilizer(-1, [0], [1]),
     ],
+    helpText: `
+        ∣1⟩ – The Excited State
+        The other basis state (next to ∣1⟩) of a qubit, representing "one." Measuring it always gives 1. You can flip between ∣0⟩ and ∣1⟩ using an X gate.
+    `
 }
 
 export const KetPlus: KetState = {
@@ -103,6 +112,11 @@ export const KetPlus: KetState = {
     stabilizer: [
         new Stabilizer(1, [1], [0]),
     ],
+    helpText: `
+        ∣+⟩ – The Plus State
+        A superposition state, created by applying a Hadamard gate to ∣0⟩.
+        Measuring it gives 0 or 1 with equal probability, one of the superpowers of quantum computing.
+    `
 }
 
 export const KetMinus: KetState = {
@@ -110,6 +124,11 @@ export const KetMinus: KetState = {
     stabilizer: [
         new Stabilizer(-1, [1], [0]),
     ],
+    helpText: `
+        ∣−⟩ – The Minus State
+        A superposition state, created by applying a Hadamard gate to ∣1⟩.
+        Measuring it gives 0 or 1 with equal probability, but with a relative phase shift that distinguishes it from ∣+⟩.
+    `
 }
 
 export const KetBellPlus: KetState = {
@@ -118,6 +137,13 @@ export const KetBellPlus: KetState = {
         new Stabilizer(1, [1, 1], [0, 0]),
         new Stabilizer(1, [0, 0], [1, 1]),
     ],
+    helpText: `
+        ∣Φ+⟩ - The Bell Plus State
+        A maximally entangled state where both qubits are always the same upon measurement.
+        This also means one qubit's state can never be described independently of the other
+        qubit. This correlation of information which we just call entanglement allows for
+        phenomena like teleportation to be possible. Much to Einstein's chagrin.
+    `
 }
 
 export const KetBellMinus: KetState = {
@@ -212,13 +238,15 @@ export class Gate {
     affectedQubits: number[];
     assets: string[];
     actionTable: ActionTable;
+    helpText: string;
 
 
     // Default constructor to be used by child classes
-    constructor(affectedQubits: number[], assets: string[], actionTable: ActionTable) {
+    constructor(affectedQubits: number[], assets: string[], actionTable: ActionTable, helpText = "") {
         this.affectedQubits = affectedQubits;
         this.assets = assets;
         this.actionTable = actionTable;
+        this.helpText = helpText;
     }
 
     // Function that maps from stabilizers to stabilizers, with an optional measurement result
@@ -292,7 +320,16 @@ export class Hadamard extends Gate {
         let actionTable = new ActionTable([
             [new Stabilizer(1, [0], [1]), new Stabilizer(1, [1], [0])],
             [new Stabilizer(1, [1], [0]), new Stabilizer(1, [0], [1])]], affectedQubits);
-        super(affectedQubits, assets, actionTable);
+        let helpText = `
+            The Hadamard Gate
+            At a basic level it puts a state into/out of superposition.
+            For example a |0> state that is initially no more powerful than a classical 0 bit
+            is transformed to a |+> state which is a state in superposition that has equal
+            probabilities of being observed as a 0 or 1 when measured. Much like Schrodinger's cat.
+            Note that this gate is self-adjoint (and unitary as all gates except measurements) which
+            means that subsequent applications cancel out, i.e. H(H(|x>)) = |x>.
+        `
+        super(affectedQubits, assets, actionTable, helpText);
     }
 }
 
