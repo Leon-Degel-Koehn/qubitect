@@ -37,4 +37,5 @@ export const Teleportation: Level = {
     ]),
     greyedOutIndices: [0, 1],
     title: "Quantum teleportation protocol",
+    successText: "🚀 You just teleported to success! 🚀",
 };
