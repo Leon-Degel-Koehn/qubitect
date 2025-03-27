@@ -27,6 +27,8 @@ Now, you can check the result of your changes by looking at the output states. C
 If you are stuck, you can always check explanations for each gate and each state by just clicking on them 🧭.
 Plus, for each puzzle there is more background information available in the top right corner 👩‍🏫, so you engage with the quantum concepts on a deeper level 💫.
 
+Play now on [r/qubitect](https://www.reddit.com/r/qubitect/)!
+
 ## 🔮 What's next for Qubitect
 🌐 **Multiplayer Mode**: Challenge your friends and compete in real-time to solve quantum puzzles together.
 
