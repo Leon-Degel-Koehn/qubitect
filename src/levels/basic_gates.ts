@@ -27,4 +27,5 @@ export const BasicGates: Level = {
     objective: `Try out the different gates and see what they do to the input state.
     Can you find the correct sequence of gates to get the expected output? 🤔`,
     help: `Check the functionality of each gate by clicking on your selected gate for a second time 🔎.`,
+    successText: "⚡️ Quantum Victory Unlocked ⚡️",
 };

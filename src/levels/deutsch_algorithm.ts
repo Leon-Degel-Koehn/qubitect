@@ -66,4 +66,5 @@ Why Is This Important?
 This was one of the first quantum algorithms to show that quantum computers can outperform classical ones! It paved the way for more powerful quantum speedups, like Deutsch-Jozsa and Simon’s algorithms.
 
 Can you harness interference to reveal the function’s nature in a single shot? 🚀✨`,
+    successText: "🎯 Measured: 100% genius! 🧠",
 };

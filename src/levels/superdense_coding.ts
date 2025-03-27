@@ -46,4 +46,5 @@ Why Is This Mind-Blowing 🤯?
 Classically, one bit of information can only carry one bit of data. But thanks to quantum entanglement, Alice can manipulate her shared qubit in a way that encodes two bits before sending it to Bob. This has huge implications for quantum networking and secure communication!
 
 Can you master this quantum hack and send double the information with half the resources? 🚀`,
+    successText: "🧠 Outsmarted classical limits! 🏆",
 };
