@@ -79,13 +79,21 @@ const Gates = ({
             // special case, if there was a greyed out gate on the previous qubit that has
             // been replaced with a two qubit gate
             if (gate instanceof Identity) {
-                const prevGate =
+                let prevGate =
                     rowIdx > 0 ? col[rowIdx - 1] : col[col.length - 1];
+                while (rowIdx > 0 && prevGate.originalIdx < 0) {
+                    rowIdx--;
+                    prevGate = col[rowIdx - 1];
+                }
                 let lastIdx = -1;
                 if (prevGate) {
                     lastIdx = prevGate.originalIdx;
                 }
+                const prevGateFinishedDrawing =
+                    prevGate.idxInAffectedQubits >=
+                    prevGate.gate.affectedQubits.length - 1;
                 if (
+                    !prevGateFinishedDrawing &&
                     props.session.level.greyedOutIndices.includes(lastIdx) &&
                     props.state.gateReplacements[lastIdx] >= 0 &&
                     props.session.level.availableGates[
@@ -95,7 +103,7 @@ const Gates = ({
                     return (
                         <zstack alignment="center">
                             <Line
-                                length={40}
+                                length={20}
                                 thickness={1}
                                 direction={Direction.Vertical}
                             />
@@ -103,7 +111,7 @@ const Gates = ({
                                 url={
                                     props.session.level.availableGates[
                                         props.state.gateReplacements[lastIdx]
-                                    ].assets[1]
+                                    ].assets[0]
                                 }
                                 imageHeight="40px"
                                 imageWidth="40px"
@@ -111,11 +119,25 @@ const Gates = ({
                         </zstack>
                     );
                 }
-                console.log(gate, "is identity");
+                if (
+                    prevGate.gate.affectedQubits.length >= 2 &&
+                    !prevGateFinishedDrawing
+                ) {
+                    return (
+                        <zstack alignment="center">
+                            <Line
+                                length={40}
+                                thickness={1}
+                                direction={Direction.Vertical}
+                            />
+                        </zstack>
+                    );
+                }
                 return <spacer height="40px" />;
             }
             // regular gate, no interaction from the user possible
             if (!props.session.level.greyedOutIndices.includes(idx)) {
+                // debug, remove vstack
                 const res = (
                     <image
                         url={gate.assets[gateEntry.idxInAffectedQubits]}
@@ -128,7 +150,7 @@ const Gates = ({
                     if (gateEntry.idxInAffectedQubits > 0) {
                         wrapper = (
                             <Line
-                                length={40}
+                                length={20}
                                 thickness={1}
                                 direction={Direction.Vertical}
                             />
@@ -227,7 +249,7 @@ const Gates = ({
                             )
                         ) : (
                             <Line
-                                length={40}
+                                length={20}
                                 thickness={1}
                                 direction={Direction.Vertical}
                             />
@@ -274,6 +296,7 @@ const OutputStates = (props: GateProps): JSX.Element => {
             <zstack
                 backgroundColor="white"
                 borderColor={
+                    props.session.optimalOutput[qubit] < 0 ||
                     ketStateIdx == props.session.optimalOutput[qubit]
                         ? "success-plain"
                         : "danger-plain"

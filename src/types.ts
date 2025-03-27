@@ -406,7 +406,7 @@ export class ControlledPauliX extends Gate {
 export class ControlledPauliZ extends Gate {
     constructor(controlQubit: number, targetQubit: number) {
         const affectedQubits = [controlQubit, targetQubit];
-        const assets = ["cz_0.png", "cz_1.png"];
+        const assets = ["cnot_0.png", "cnot_0.png"];
         const actionTable = new ActionTable(
             [
                 [
@@ -435,11 +435,16 @@ export class ControlledPauliZ extends Gate {
 export class Measurement extends Gate {
     measurementOperator: Stabilizer;
 
-    constructor(
-        measurementOperator: Stabilizer,
-        affectedQubits: number[] = [],
-    ) {
-        // TODO: Affected qubits can be derived from the stabilizer
+    constructor(measurementOperator: Stabilizer) {
+        const affectedQubits = [];
+        for (let i = 0; i < measurementOperator.x_part.length; i++) {
+            if (
+                measurementOperator.x_part[i] == 1 ||
+                measurementOperator.z_part[i] == 1
+            ) {
+                affectedQubits.push(i);
+            }
+        }
         super(
             affectedQubits,
             ["standard_measure.png"],
@@ -512,6 +517,22 @@ export class Measurement extends Gate {
             postMeasurementStabilizers.push(this.measurementOperator);
             return postMeasurementStabilizers;
         }
+    }
+}
+
+export class DeutschOracleFunction extends Gate {
+    constructor(
+        controlQubit: number,
+        targetQubit: number,
+        isBalanced: boolean,
+    ) {
+        const assets = ["oracle_function_1.png", "oracle_function_2.png"];
+        let actionTable = new ActionTable([], []);
+        if (!isBalanced) {
+            actionTable = new ControlledPauliX(controlQubit, targetQubit)
+                .actionTable;
+        }
+        super([controlQubit, targetQubit], assets, actionTable);
     }
 }
 
