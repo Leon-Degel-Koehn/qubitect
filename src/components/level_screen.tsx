@@ -16,6 +16,9 @@ const QubitLines = ({ numQubits }: { numQubits: number }): JSX.Element => {
 };
 
 const GateSelectionMenu = (props: GateProps): JSX.Element => {
+    const visuallySelected = "50px";
+    const visuallyUnselected = "30px";
+    const noneSelected = "40px";
     return (
         <hstack
             alignment="center middle"
@@ -26,30 +29,39 @@ const GateSelectionMenu = (props: GateProps): JSX.Element => {
             cornerRadius="medium"
         >
             {props.session.level.availableGates.map((gate, idx) => (
-                <image
-                    url={gate.assets[0]}
-                    imageHeight={
+                <vstack
+                    height={
                         props.state.selectedGate >= 0
                             ? idx == props.state.selectedGate
-                                ? 50
-                                : 30
-                            : 40
+                                ? visuallySelected
+                                : visuallyUnselected
+                            : noneSelected
                     }
-                    imageWidth={
+                    width={
                         props.state.selectedGate >= 0
                             ? idx == props.state.selectedGate
-                                ? 50
-                                : 30
-                            : 40
+                                ? visuallySelected
+                                : visuallyUnselected
+                            : noneSelected
                     }
-                    onPress={() => {
-                        if (props.state.selectedGate === idx) {
-                            props.state.setPopupText(gate.helpText);
-                        } else {
-                            props.state.selectGate(idx);
-                        }
-                    }}
-                />
+                >
+                    {gate.assets.map((asset) => (
+                        <image
+                            url={asset}
+                            height={`${Math.round(100 / gate.assets.length)}%`}
+                            width={`${Math.round(100 / gate.assets.length)}%`}
+                            imageHeight={1000}
+                            imageWidth={1000}
+                            onPress={() => {
+                                if (props.state.selectedGate === idx) {
+                                    props.state.setPopupText(gate.helpText);
+                                } else {
+                                    props.state.selectGate(idx);
+                                }
+                            }}
+                        />
+                    ))}
+                </vstack>
             ))}
         </hstack>
     );
