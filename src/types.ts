@@ -12,6 +12,7 @@ export interface Level {
     objective?: string; // A text to display to the user to clarify the task
     title?: string; // The headline title of the puzzle
     help?: string;
+    successText?: string;
 }
 
 export class Circuit {

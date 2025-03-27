@@ -11,6 +11,7 @@ import { GateLayout, gateLayout } from "../ui/helper.js";
 import { Session } from "../levels/types.js";
 import { Direction, Line } from "./line.js";
 import { InfoPopup } from "./InfoPopup.js";
+import { SuccessPopup } from "./SuccessPopup.js";
 
 const QubitLines = ({ numQubits }: { numQubits: number }): JSX.Element => {
     const lines = [<spacer height="20px" />];
@@ -382,16 +383,22 @@ export class LevelScreenState {
     gateReplacements: number[]; // indices in the level's available gates
     outputStates: number[]; // indices in the global KNOWN_STATES
     popupText: string;
+    showSuccessPopup: boolean;
+    levelComplete: boolean; // user has already finished
 
     // Global setters of state variables
     replaceGate: StateSetter<number>[];
     selectGate: StateSetter<number>;
     updateOutputStates: StateSetter<Array<number>>;
     setPopupText: StateSetter<string>;
+    setSuccessPopupVisible: StateSetter<boolean>;
+    setLevelComplete: StateSetter<boolean>;
 
     constructor(session: Session) {
         [this.selectedGate, this.selectGate] = useState(-1);
         [this.popupText, this.setPopupText] = useState("");
+        [this.showSuccessPopup, this.setSuccessPopupVisible] = useState(false);
+        [this.levelComplete, this.setLevelComplete] = useState(false);
         const initialOutput = stateFromStabilizer(
             session.displayedCircuit.simulate(session.level.inputState),
         ).map((ketState) => KNOWN_STATES.indexOf(ketState));
@@ -459,6 +466,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
                                 />
                             ))}
                         </vstack>
+                        <spacer grow shape="invisible" />
                         <Gates
                             props={{ session: props.session, state: state }}
                             layout={layout}
@@ -484,6 +492,21 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
                     state.setPopupText(val ? state.popupText : "");
                 }}
                 text={state.popupText}
+            />
+            <SuccessPopup
+                visible={
+                    !state.levelComplete &&
+                    state.outputStates.every(
+                        (idx, i) =>
+                            props.session.optimalOutput[i] < 0 ||
+                            props.session.optimalOutput[i] === idx,
+                    ) &&
+                    !state.levelComplete
+                }
+                close={() => {
+                    state.setLevelComplete(true);
+                }}
+                text={props.session.level.successText}
             />
         </zstack>
     );

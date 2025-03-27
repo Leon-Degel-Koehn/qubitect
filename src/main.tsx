@@ -3,6 +3,7 @@ import { LevelScreen } from "./components/level_screen.js";
 import { LEVELS } from "./levels/level_db.js";
 import { Session } from "./levels/types.js";
 import { HelpScreen } from "./components/help_screen.js";
+import { SuccessPopup } from "./components/SuccessPopup.js";
 
 Devvit.configure({
     redis: true,
