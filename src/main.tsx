@@ -42,7 +42,7 @@ Devvit.addSchedulerJob({
         const { reddit } = context;
         const subreddit = await reddit.getCurrentSubreddit();
         const post = await reddit.submitPost({
-            title: "Daily qubitect post",
+            title: "Your daily Qubitect puzzle 🧩",
             subredditName: subreddit.name,
             // The preview appears while the post loads
             preview: (
@@ -86,7 +86,7 @@ Devvit.addMenuItem({
         if (jobs.length > 0) return;
         await context.scheduler.runJob({
             name: "Daily Qubitect puzzle post",
-            cron: "*/1 * * * *",
+            cron: "0 0 * * *",
         });
         console.log("Added daily posting job");
     },
