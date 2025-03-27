@@ -482,7 +482,7 @@ export class Measurement extends Gate {
                 // 2. Find resulting phase
                 let phase = 1;
                 for (let i = 0; i < absSolution.length; i++) {
-                    phase *= absSolution[i] * input[i].phase;
+                    phase *= Math.pow(input[i].phase, absSolution[i]);
                 }
                 console.log("Measurement result: ", phase >= 0 ? 0 : 1);
                 return input;
