@@ -8,7 +8,7 @@ import {
     PauliX,
 } from "../types.js";
 
-export const EPR: Level = {
+export const BellstatePreparation: Level = {
     availableGates: [
         new ControlledPauliX(-1, -1),
         new Hadamard(-1),
@@ -38,4 +38,5 @@ Bell’s Theorem and Quantum Reality
 Decades later, physicist John Bell formulated Bell’s theorem, which showed that if quantum mechanics were wrong, certain measurable inequalities should hold. However, experiments confirmed that quantum mechanics is correct, and entanglement is real—without any hidden variables at play.
 
 Today, entangled states like the Bell+ state are crucial for quantum teleportation, quantum cryptography, and superdense coding. By creating this state, you’re stepping into the same debate that challenged Einstein and shaped the foundations of quantum mechanics!`,
+    successText: "🔗 You entangled that like a pro! 🔗",
 };

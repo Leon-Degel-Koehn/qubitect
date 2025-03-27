@@ -37,5 +37,17 @@ export const Teleportation: Level = {
     ]),
     greyedOutIndices: [0, 1],
     title: "Quantum teleportation protocol",
+    objective: `Turn the resulting state of the third qubit into the input state of the first qubit! 🚀`,
+    help: `Quantum Teleportation – Move Qubits Without Moving Them
+
+In this level, you’ll explore quantum teleportation, a protocol that allows you to transfer a qubit’s state from one place to another without physically moving the qubit itself!
+How Does It Work?
+
+The secret ingredient is entanglement. Alice and Bob share an EPR pair (a Bell state). Alice then interacts her qubit with the one she wants to teleport and performs a Bell measurement. This collapses the system and gives her two classical bits of information, which she sends to Bob. Using these bits, Bob applies the right quantum gate to his qubit, perfectly reconstructing the original state!
+Why Is This So Cool?
+
+Unlike science fiction teleportation, no physical particle is transferred—only the state moves! However, because classical bits must be sent, no information travels faster than light, preserving relativity.
+
+Quantum teleportation is key to quantum networks, cryptography, and even future quantum internet. Can you teleport like a quantum pro? 🚀✨`,
     successText: "🚀 You just teleported to success! 🚀",
 };
