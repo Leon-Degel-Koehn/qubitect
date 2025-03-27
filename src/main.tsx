@@ -86,7 +86,7 @@ Devvit.addMenuItem({
         if (jobs.length > 0) return;
         await context.scheduler.runJob({
             name: "Daily Qubitect puzzle post",
-            cron: "*/2 * * * *",
+            cron: "*/1 * * * *",
         });
         console.log("Added daily posting job");
     },

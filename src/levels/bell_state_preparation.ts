@@ -8,7 +8,7 @@ import {
     PauliX,
 } from "../types.js";
 
-export const EPR: Level = {
+export const BellstatePreparation: Level = {
     availableGates: [
         new ControlledPauliX(-1, -1),
         new Hadamard(-1),
