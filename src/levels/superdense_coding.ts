@@ -4,14 +4,11 @@ import {
     Measurement,
     PauliX,
     PauliZ,
-    Stabilizer
+    Stabilizer,
 } from "../types.js";
 
-export const SuperdenseCoding : Level =  {
-    availableGates: [
-        new PauliX(-1),
-        new PauliZ(-1),
-    ],
+export const SuperdenseCoding: Level = {
+    availableGates: [new PauliX(-1), new PauliZ(-1)],
     inputState: [
         new Stabilizer(1, [1, 1], [0, 0]),
         new Stabilizer(1, [0, 0], [1, 1]),
@@ -27,6 +24,6 @@ export const SuperdenseCoding : Level =  {
         new Measurement(new Stabilizer(1, [1, 1], [0, 0])),
         new Measurement(new Stabilizer(1, [0, 0], [1, 1])),
     ]),
-    greyedOutIndices: [0,1],
+    greyedOutIndices: [0, 1],
     title: "Superdense coding protocol 🧪",
-}
+};
