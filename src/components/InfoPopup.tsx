@@ -8,6 +8,9 @@ type InfoPopupProps = {
 
 export const InfoPopup = (props: InfoPopupProps): JSX.Element => {
     if (!props.visible) return "";
+    const lines = props.text.split("\n");
+    const firstLine = lines.shift(); // Extract the first line
+    const restOfText = lines.join("\n"); // Join the remaining lines back together
     return (
         <vstack
             height="70%"
@@ -15,23 +18,23 @@ export const InfoPopup = (props: InfoPopupProps): JSX.Element => {
             alignment="top center"
             backgroundColor="CoolGray-900"
             cornerRadius="medium"
+            padding="small"
         >
-            <hstack
-                width="100%"
-                height="50px"
-                alignment="middle end"
-                padding="small"
-            >
+            <hstack width="100%" height="50px" alignment="middle end">
                 <button
                     appearance="plain"
-                    icon="clear"
+                    icon="close"
                     onPress={() => {
                         props.setVisible(false);
                     }}
                 />
             </hstack>
+            <text style="heading" maxWidth={100} width={100} wrap>
+                {firstLine}
+            </text>
+            <spacer size="small" />
             <text size="small" maxWidth={100} width={100} height={100} wrap>
-                {props.text}
+                {restOfText}
             </text>
         </vstack>
     );

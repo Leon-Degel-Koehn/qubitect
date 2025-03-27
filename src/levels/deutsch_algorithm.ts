@@ -39,7 +39,7 @@ export const DeutschAlgorithmUnbalanced: Level = {
     ],
     expectedResult: [
         new Stabilizer(-1, [0, 0], [1, 0]),
-        new Stabilizer(1, [0, 0], [0, 0]),
+        new Stabilizer(-1, [0, 1], [0, 0]),
     ],
     circuit: new Circuit(2, [
         new PauliX(1),
