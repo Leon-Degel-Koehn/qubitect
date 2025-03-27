@@ -320,7 +320,9 @@ export class PauliX extends Gate {
             [[new Stabilizer(1, [0], [1]), new Stabilizer(-1, [0], [1])]],
             affectedQubits,
         );
-        super(affectedQubits, assets, actionTable);
+        const helpText = `Pauli-X – The Bit Flipper
+Swaps 0 and 1, just like flipping a coin! This gate acts like the classical NOT operation, turning |0⟩ into |1⟩ and vice versa.`;
+        super(affectedQubits, assets, actionTable, helpText);
     }
 }
 
@@ -332,7 +334,9 @@ export class PauliZ extends Gate {
             [[new Stabilizer(1, [1], [0]), new Stabilizer(-1, [1], [0])]],
             affectedQubits,
         );
-        super(affectedQubits, assets, actionTable);
+        const helpText = `Pauli-Z – The Phase Flipper
+        This gate keeps |0⟩ unchanged but flips the sign of |1⟩. It also turns |+⟩ into |−⟩, making it key for phase shifts in quantum mechanics!`;
+        super(affectedQubits, assets, actionTable, helpText);
     }
 }
 
@@ -347,7 +351,9 @@ export class PauliY extends Gate {
             ],
             affectedQubits,
         );
-        super(affectedQubits, assets, actionTable);
+        const helpText = `Pauli-Y – The Phase Twister
+Flips the qubit like the X gate but adds a phase twist! |0⟩ becomes i|1⟩, and |1⟩ becomes -i|0⟩. A mix of flipping and spinning!`;
+        super(affectedQubits, assets, actionTable, helpText);
     }
 }
 
@@ -362,15 +368,9 @@ export class Hadamard extends Gate {
             ],
             affectedQubits,
         );
-        const helpText = `
-            The Hadamard Gate
-            At a basic level it puts a state into/out of superposition.
-            For example a |0> state that is initially no more powerful than a classical 0 bit
-            is transformed to a |+> state which is a state in superposition that has equal
-            probabilities of being observed as a 0 or 1 when measured. Much like Schrodinger's cat.
-            Note that this gate is self-adjoint (and unitary as all gates except measurements) which
-            means that subsequent applications cancel out, i.e. H(H(|x>)) = |x>.
-        `;
+        const helpText = `Hadamard (H) – The Superposition Creator
+            This gate transforms |0⟩ into the ‘plus’ state (|+⟩), an equal superposition of |0⟩ and |1⟩.
+            It allows a qubit to exist in both states at once, unlocking the power of quantum parallelism!.`;
         super(affectedQubits, assets, actionTable, helpText);
     }
 }
@@ -400,7 +400,9 @@ export class ControlledPauliX extends Gate {
             ],
             affectedQubits,
         );
-        super(affectedQubits, assets, actionTable);
+        const helpText = `CNOT – The Entangler
+This gate flips the second qubit (target) if the first qubit (control) is |1⟩. It creates entanglement, linking qubits so that their states are no longer independent—essential for quantum computing magic!`;
+        super(affectedQubits, assets, actionTable, helpText);
     }
 }
 
@@ -429,7 +431,9 @@ export class ControlledPauliZ extends Gate {
             ],
             affectedQubits,
         );
-        super(affectedQubits, assets, actionTable);
+        const helpText = `Controlled-Z – The Phase Entangler
+This gate flips the phase of the second qubit (target) if the first qubit (control) is |1⟩. It entangles qubits by linking their phases, a crucial feature for quantum algorithms!`;
+        super(affectedQubits, assets, actionTable, helpText);
     }
 }
 
@@ -446,10 +450,13 @@ export class Measurement extends Gate {
                 affectedQubits.push(i);
             }
         }
+        const helpText = `Measurement – The Quantum Observer
+        When you measure a qubit in the computational basis, it collapses to either |0⟩ or |1⟩. The superposition vanishes, leaving behind a definite outcome—no turning back!`;
         super(
             affectedQubits,
             ["standard_measure.png"],
             new ActionTable([], []),
+            helpText,
         );
         this.affectedQubits = affectedQubits;
         this.measurementOperator = measurementOperator;
