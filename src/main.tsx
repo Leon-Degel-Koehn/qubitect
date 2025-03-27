@@ -108,12 +108,17 @@ const App: Devvit.CustomPostComponent = (context) => {
     }
     const [displayHelp, changeDisplayHelp] = useState(false);
     const session = new Session(LEVELS[levelId]);
+    const postDimensions = context.dimensions ?? { width: 0, height: 0 };
     return (
         <zstack height={100} width={100}>
             {displayHelp ? (
                 <HelpScreen session={session} />
             ) : (
-                <LevelScreen session={session} />
+                <LevelScreen
+                    session={session}
+                    screenWidth={postDimensions.width}
+                    screenHeight={postDimensions.height}
+                />
             )}
             <hstack alignment="end" width={100}>
                 <button

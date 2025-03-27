@@ -10,7 +10,7 @@ const QubitLines = ({ numQubits }: { numQubits: number }): JSX.Element => {
     const lines = [<spacer height="20px" />];
     for (let i = 0; i < numQubits; i++) {
         lines.push(<hstack width="100%" height="1px" borderColor="black" />);
-        lines.push(<spacer height="40px" />);
+        lines.push(<spacer height="39px" />);
     }
     return <vstack width="100%">{lines}</vstack>;
 };
@@ -63,9 +63,11 @@ interface GateProps {
 const Gates = ({
     props,
     layout,
+    gapSize,
 }: {
     props: GateProps;
     layout: GateLayout;
+    gapSize: number;
 }): JSX.Element => {
     // make sure the internal representation of the gates is up to date
     props.state.gateReplacements.forEach((gateReplacement, idx) => {
@@ -280,10 +282,13 @@ const Gates = ({
         }),
     );
     return (
-        <hstack alignment="center" gap="large" grow>
-            {mappedLayout.map((column) => (
-                <vstack>{column}</vstack>
-            ))}
+        <hstack alignment="center">
+            {mappedLayout
+                .map((column) => [
+                    <vstack>{column}</vstack>,
+                    <spacer width={`${gapSize}px`} />,
+                ])
+                .flat()}
         </hstack>
     );
 };
@@ -318,6 +323,8 @@ const OutputStates = (props: GateProps): JSX.Element => {
 
 interface LevelScreenProps {
     session: Session;
+    screenWidth: number;
+    screenHeight: number;
 }
 
 export class LevelScreenState {
@@ -355,13 +362,18 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
     const numQubits = props.session.level.circuit.qubits;
     const ketInputStates = stateFromStabilizer(props.session.level.inputState);
     const layout = gateLayout(props.session);
+    const circuitDepth = layout.length + 2; // +2 for input and output states
+    const availableWidth = props.screenWidth - 24;
+    const gapSize = Math.min(
+        Math.floor((availableWidth - circuitDepth * 40) / (circuitDepth - 1)),
+        32,
+    );
     return (
         <zstack
             alignment="center"
             width="100%"
             height="100%"
-            gap="large"
-            padding="medium"
+            padding="xsmall"
             backgroundColor="white"
         >
             {" "}
@@ -371,7 +383,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
                 width="100%"
                 height="100%"
                 gap="large"
-                padding="medium"
+                padding="small"
                 backgroundColor="white"
             >
                 {props.session.level.title ? (
@@ -401,6 +413,7 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
                         <Gates
                             props={{ session: props.session, state: state }}
                             layout={layout}
+                            gapSize={gapSize}
                         />
                         <spacer grow shape="invisible" />
                         <vstack>
