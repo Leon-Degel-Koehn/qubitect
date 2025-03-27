@@ -485,7 +485,9 @@ export const LevelScreen = (props: LevelScreenProps): JSX.Element => {
                     </hstack>
                 </zstack>
                 <vstack grow alignment="center middle">
-                    <text wrap>{props.session.level.objective || ""}</text>
+                    <text wrap maxWidth="80%">
+                        {props.session.level.objective || ""}
+                    </text>
                 </vstack>
                 <GateSelectionMenu session={props.session} state={state} />
             </vstack>
