@@ -33,4 +33,6 @@ export const SuperdenseCoding: Level = {
     ]),
     greyedOutIndices: [0, 1],
     title: "Superdense coding protocol 🧪",
+    objective: `Alice wants to send Bob the two bits 11 of information by sending only one qubit. Can you help her? 📩 
+        Find the correct gate sequence to encode the bits 11 on Alice's qubit. Bob gets the information by measuring both qubits. 🕵🏻‍♂️`,
 };
