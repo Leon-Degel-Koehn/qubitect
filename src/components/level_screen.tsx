@@ -195,6 +195,9 @@ const Gates = ({
                         url={gate.assets[gateEntry.idxInAffectedQubits]}
                         imageHeight="40px"
                         imageWidth="40px"
+                        onPress={() =>
+                            props.state.setPopupText(gateEntry.gate.helpText)
+                        }
                     />
                 );
                 let wrapper = null;
