@@ -370,7 +370,7 @@ export class Hadamard extends Gate {
         );
         const helpText = `Hadamard (H) – The Superposition Creator
             This gate transforms |0⟩ into the ‘plus’ state (|+⟩), an equal superposition of |0⟩ and |1⟩.
-            It allows a qubit to exist in both states at once, unlocking the power of quantum parallelism!.`;
+            It allows a qubit to exist in both states at once, unlocking the power of quantum parallelism!`;
         super(affectedQubits, assets, actionTable, helpText);
     }
 }
