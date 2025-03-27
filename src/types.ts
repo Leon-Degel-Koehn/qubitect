@@ -406,7 +406,7 @@ export class ControlledPauliX extends Gate {
 export class ControlledPauliZ extends Gate {
     constructor(controlQubit: number, targetQubit: number) {
         const affectedQubits = [controlQubit, targetQubit];
-        const assets = ["cz_0.png", "cz_1.png"];
+        const assets = ["cnot_0.png", "cnot_0.png"];
         const actionTable = new ActionTable(
             [
                 [

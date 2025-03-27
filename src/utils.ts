@@ -81,6 +81,7 @@ export const stateFromStabilizer = (
     stabilizer: Stabilizer[],
     bestEffort = true,
 ): KetState[] => {
+    if (stabilizer.length === 0) return [];
     const numQubits = stabilizer[0].x_part.length;
     for (let comboLen = 1; comboLen < 2 * numQubits; comboLen++) {
         // just a heuristic on the upper loop bound

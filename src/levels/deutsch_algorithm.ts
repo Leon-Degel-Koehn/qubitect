@@ -50,5 +50,5 @@ export const DeutschAlgorithmUnbalanced: Level = {
         new Measurement(new Stabilizer(1, [0, 0], [1, 0])),
     ]),
     greyedOutIndices: [0],
-    title: "Deutsch's algorithm: balanced Oracle function ⚖️",
+    title: "Deutsch's algorithm: unbalanced Oracle function",
 };
