@@ -3,11 +3,49 @@ import { LevelScreen } from "./components/level_screen.js";
 import { LEVELS } from "./levels/level_db.js";
 import { Session } from "./levels/types.js";
 import { HelpScreen } from "./components/help_screen.js";
-import { SuccessPopup } from "./components/SuccessPopup.js";
 
 Devvit.configure({
     redis: true,
     redditAPI: true,
+});
+
+const randomTitle = () => {
+    const titles = [
+        "Can you solve this Qubitect challenge? 🤔⚡",
+        "Think you can crack this quantum puzzle? 🧠🚀",
+        "A new Qubitect challenge awaits! Ready? 🎯",
+        "Quantum geniuses wanted! Can you solve this? 🧠💡",
+        "Crack this quantum puzzle and flex your Qubitect skills! 💡⚡",
+        "Quantum mastery starts here—can you prove yourself? 🚀🔬",
+        "Test your quantum skills—can you solve this? 🏆🔬",
+        "Borrow computing power from the multiverse—solve this! 🔮🧠",
+    ];
+    const randomIdx = Math.floor(Math.random() * titles.length);
+    return titles[randomIdx];
+};
+
+Devvit.addMenuItem({
+    label: "Post a random Qubitect puzzle",
+    location: "subreddit",
+    onPress: async (_event, context) => {
+        const { reddit, ui } = context;
+        ui.showToast(
+            "Submitting your post - upon completion you'll navigate there.",
+        );
+        const subreddit = await reddit.getCurrentSubreddit();
+        const post = await reddit.submitPost({
+            title: randomTitle(),
+            subredditName: subreddit.name,
+            preview: (
+                <vstack height="100%" width="100%" alignment="middle center">
+                    <text size="large">Loading ...</text>
+                </vstack>
+            ),
+        });
+        const levelId = Math.floor(Math.random() * LEVELS.length);
+        await context.redis.set(post.id, levelId.toString());
+        ui.navigateTo(post);
+    },
 });
 
 Devvit.addSchedulerJob({
