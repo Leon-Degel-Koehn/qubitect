@@ -25,7 +25,7 @@ export const BasicGates: Level = {
     greyedOutIndices: [0, 1, 2],
     title: "Explore basic gate functionality 🔬",
     objective: `Try out the different gates and see what they do to the input state.
-    Can you find the correct sequence of gates to get the expected output? 🤔`,
+    Can you find the correct sequence of gates to get the expected output |1>, |->, |+>? 🤔`,
     help: `Check the functionality of each gate by clicking on your selected gate for a second time 🔎.`,
     successText: "⚡️ Quantum Victory Unlocked ⚡️",
 };
