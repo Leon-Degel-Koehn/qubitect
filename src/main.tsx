@@ -79,7 +79,7 @@ Devvit.addSchedulerJob({
 });
 
 Devvit.addMenuItem({
-    label: "Remove daily post",
+    label: "Remove daily Qubitect post",
     location: "subreddit",
     forUserType: "moderator",
     onPress: async (_, context) => {
@@ -87,6 +87,9 @@ Devvit.addMenuItem({
         jobs.forEach((job) => {
             context.scheduler.cancelJob(job.id);
         });
+        context.ui.showToast(
+            "Sucess! This Subreddit will no longer receive daily Qubitect posts.",
+        );
     },
 });
 
@@ -100,7 +103,9 @@ Devvit.addMenuItem({
             name: "Daily Qubitect puzzle post",
             cron: "0 0 * * *",
         });
-        console.log("Added daily posting job");
+        context.ui.showToast(
+            "Sucess! Every Day at 0:00 UTC you there will be an automated post on this Subreddit",
+        );
     },
 });
 
